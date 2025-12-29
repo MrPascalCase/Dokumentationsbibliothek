@@ -1,0 +1,43 @@
+﻿@page "/image"
+@using ImageSearch.Services
+
+<div class="outer-container">
+    <div class="inner-container">
+        <div class="left">
+            <img class="image placeholder blur-up"
+                 onload="this.classList.add('loaded')"
+                 src="@_imageSrc"
+                 alt="@_imageAlt"/>
+        </div>
+        <div style="width: 20px"></div>
+        <div class="right">
+            <h3>@Caption</h3>
+            <div>Jahr: @Jahr</div>
+            <div>Dekade: @Decade</div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [SupplyParameterFromQuery(Name = "id")]
+    public string ImageId { get; set; } = string.Empty;
+
+    [Inject]
+    public required SearchService SearchService { get; set; }
+
+    private string Caption => _result?.Caption ?? "<Titel>";
+    private string Jahr => _result?.Year ?? "<keine Angabe>";
+    private string Decade => _result?.Decade?.ToString() ?? "<keine Angabe>";
+
+    private string _imageSrc = string.Empty;
+    private readonly string _imageAlt = "Bild wird geladen...";
+    private Services.Image? _result;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _result = await SearchService.LoadImage(ImageId);
+        _imageSrc = _result.ImageUrl;
+        StateHasChanged();
+    }
+}

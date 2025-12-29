@@ -1,0 +1,56 @@
+﻿@using DokubibImageSearch.Services
+@namespace DokubibImageSearch.Components
+
+<div class="card">
+    <div style="@Size" @onclick="OnClick">
+        <a href="@DetailUrl">
+        <img class="image placeholder blur-up"
+             onload="this.classList.add('loaded')"
+             style="@Size"
+             src="@_imageSrc"
+             alt="@_imageAlt"/>
+        </a>
+    </div>
+    <div>@Title</div>
+    <div>@Jahr</div>
+</div>
+
+@code
+{
+    public const int Height = 250;
+    
+    [Inject]
+    public required NavigationManager NavigationManager { get; set; }
+    
+    [Inject]
+    public required SearchService SearchService { get; set; }
+
+    [Parameter]
+    public required string ImageId { get; set; }
+
+    private string Title => _result?.Caption ?? "<Titel>"; 
+    private string Jahr => _result?.Year ?? "<Jahr>"; 
+    private string Size => $"width: {_width}px; height: {Height}px";
+    private string DetailUrl => $"/image?id={ImageId}";
+
+    private int _width = Height;
+    private string _imageSrc = string.Empty;
+    private string _imageAlt = "Bild wird geladen...";
+    private Services.Image? _result;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _result = await SearchService.LoadImage(ImageId);
+        
+        double aspectRatio = (double)_result.Width / _result.Height;
+        _width = (int)Math.Round(aspectRatio * Height);
+        _imageSrc = _result.GetThumbnailUrl(_width, Height);
+        
+        StateHasChanged();
+    }
+
+    private void OnClick(MouseEventArgs obj)
+    {
+        NavigationManager.NavigateTo(DetailUrl);
+    }
+}

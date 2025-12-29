@@ -1,0 +1,29 @@
+﻿.search-bar
+{
+    border: none;
+    outline: none;
+    background: lightgray;
+    border-radius: 15px;
+    height: 40px;
+    margin: 10px;
+    padding: 0px;
+}
+
+.container {
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    height: max-content;
+}
+
+button {
+    cursor: pointer;
+}
+
+.spacer {
+    width: 20px;
+}
+
+input {
+    width: max-content;
+}

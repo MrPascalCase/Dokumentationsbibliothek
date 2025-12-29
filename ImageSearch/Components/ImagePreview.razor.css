@@ -1,0 +1,22 @@
+
+.card {
+    padding: 5px;
+}
+
+.image {
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.placeholder {
+    background: url('placeholder.png') center center / cover no-repeat;
+}
+
+.blur-up {
+    filter: blur(10px);
+    transition: filter 0.8s ease;
+}
+
+.blur-up.loaded {
+    filter: blur(0);
+}

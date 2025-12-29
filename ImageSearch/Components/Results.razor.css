@@ -1,0 +1,11 @@
+﻿
+.image-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.row-container {
+    display: flex;
+    justify-content: center;
+}

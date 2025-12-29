@@ -1,0 +1,67 @@
+﻿@using DokubibImageSearch.Services
+@namespace DokubibImageSearch.Components
+
+@if (_results.Count > 0)
+{
+    <InfiniteScroll ObserverTargetId="EndMarker" FetchMore="FetchMore">
+        @for (int row = 0; row * ImagesPerRow < _results.Count; row++)
+        {
+            <div class="row-container">
+                <div class="image-row">
+                    @for (int col = 0; col < ImagesPerRow; col++)
+                    {
+                        int index = ImagesPerRow * row + col;
+                        if (index < _results.Count)
+                        {
+                            <ImagePreview @key="_results[index]" ImageId="@_results[index]"/>
+                        }
+                    }
+                </div>
+            </div>
+        }
+
+        <div id="EndMarker"></div>
+    </InfiniteScroll>
+}
+
+@code {
+    const int ImagesPerRow = 4;
+    const int ApiPaging = 20;
+
+    int _indexNextElement = 0;
+    List<string> _results = new();
+
+    [Inject]
+    public required SearchService SearchService { get; set; }
+
+    [Parameter]
+    public required string SearchText { get; set; } = string.Empty;
+
+    public async Task FetchMore()
+    {
+        Query query = new() { Text = SearchText, };
+        SearchService.Ids ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
+
+        _indexNextElement += ApiPaging;
+        _results.AddRange(ids);
+    }
+
+    public async Task UpdateSearch(string text)
+    {
+        SearchText = text;
+        _results = new List<string>();
+        _indexNextElement = 0;
+
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            await FetchMore();
+        }
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await FetchMore();
+    }
+}
