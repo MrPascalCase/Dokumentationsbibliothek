@@ -9,11 +9,47 @@
                  src="@_imageSrc"
                  alt="@_imageAlt"/>
         </div>
+
         <div style="width: 20px"></div>
+
         <div class="right">
-            <h3>@Caption</h3>
-            <div>Jahr: @Jahr</div>
-            <div>Dekade: @Decade</div>
+            <h3>@(_result?.Caption ?? "<Titel>")</h3>
+            <dl>
+                <dt>Bildnummer</dt>
+                <dd>@(_result?.ImageNr.ToString() ?? "<keine Angabe>")</dd>
+
+                <dt>Kategorie</dt>
+                <dd>
+                    @((_result?.Subject?.Length ?? 0) > 0 ? string.Join(">", _result!.Subject!) : "<keine Angabe>")
+                </dd>
+
+                <dt>Beschreibung</dt>
+                <dd>@(_result?.Description ?? "<keine Angabe>")</dd>
+
+                <dt>Erfassungsdatum</dt>
+                <dd>@(_result?.Erfassungsdatum ?? "<keine Angabe>")</dd>
+
+                <dt>Jahr</dt>
+                <dd>@(_result?.Year ?? "<keine Angabe>")</dd>
+
+                <dt>Jahreszeit</dt>
+                <dd>@(_result?.Season ?? "<keine Angabe>")</dd>
+
+                <dt>Dekade</dt>
+                <dd>@(_result?.Decade.ToString() ?? "<keine Angabe>")</dd>
+
+                <dt>Urheber</dt>
+                <dd>@(_result?.Urheber ?? "<keine Angabe>")</dd>
+
+                <dt>Lizenz</dt>
+                <dd>@(_result?.License ?? "<keine Angabe>")</dd>
+
+                <dt>Bild Id (DokubibId)</dt>
+                <dd>@(_result?.DokubibId ?? "<keine Angabe>")</dd>
+
+                <dt>Negativnummer</dt>
+                <dd>@(_result?.Negativnummer ?? "<keine Angabe>")</dd>
+            </dl>
         </div>
     </div>
 </div>
@@ -26,11 +62,7 @@
     [Inject]
     public required SearchService SearchService { get; set; }
 
-    private string Caption => _result?.Caption ?? "<Titel>";
-    private string Jahr => _result?.Year ?? "<keine Angabe>";
-    private string Decade => _result?.Decade?.ToString() ?? "<keine Angabe>";
-
-    private string _imageSrc = string.Empty;
+    private string _imageSrc = "./placeholder";
     private readonly string _imageAlt = "Bild wird geladen...";
     private Services.Image? _result;
 

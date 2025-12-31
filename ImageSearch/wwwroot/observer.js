@@ -1,10 +1,12 @@
-﻿export function registerObserver (component, targetId)
-{
+﻿export function registerObserver(component, element) {
+    console.log("register the observer...");
+    console.log(component);
+    console.log(element);
+    
     let observer = new IntersectionObserver(e => {
+        console.log("intersection detected.");
         component.invokeMethodAsync('OnIntersection');
     });
 
-    let element = document.getElementById(targetId);
-    if (element == null) throw new Error("The observable target was not found");
     observer.observe(element);
 }

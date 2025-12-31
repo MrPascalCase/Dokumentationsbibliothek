@@ -1,6 +1,7 @@
-﻿using DokubibImageSearch.Services;
+﻿using ImageSearch.Services;
+using Microsoft.AspNetCore.Components;
 
-namespace DokubibImageSearch.Test;
+namespace ImageSearch.Test;
 
 [TestClass]
 public class ImageTest
@@ -118,5 +119,26 @@ public class ImageTest
         Assert.IsTrue(result);
         CollectionAssert.AreEquivalent(new[] { "Something", "Some Other Thing", }, subject);
         Assert.AreEqual("Actual Title", caption);
+    }
+
+    [TestMethod]
+    public void TestExplainSearch()
+    {
+        // Arrange
+        HttpClient client = new();
+        string url = "https://api.dasch.swiss/v2/resources/http%3A%2F%2Frdfh.ch%2F0804%2F0hJhqVA_SeGE0SDYtntHDQ";
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+
+        HttpResponseMessage response = client.SendAsync(request).Result;
+        response.EnsureSuccessStatusCode();
+        string content = response.Content.ReadAsStringAsync().Result;
+        Image result = new(content);
+
+        // Act
+        MarkupString markup = result.ExplainSearch("postauto", 40, "match");
+
+        // Assert
+        Console.WriteLine(markup);
+        Assert.AreEqual("Vorpflug <div class=\"match\">Postauto</div> bei der Schneer&#228;umung", markup.ToString());
     }
 }

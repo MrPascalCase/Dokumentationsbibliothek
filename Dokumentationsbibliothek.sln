@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DokubibImageSearch", "DokubibImageSearch\DokubibImageSearch.csproj", "{A92DE08D-3821-443B-B962-E42BC4B623A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageSearch", "ImageSearch\ImageSearch.csproj", "{A92DE08D-3821-443B-B962-E42BC4B623A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DokubibImageSearch.Test", "DokubibImageSearch.Test\DokubibImageSearch.Test.csproj", "{7A6920AB-3BF1-43E2-8B60-6C0E34CD033D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImageSearch.Test", "ImageSearch.Test\ImageSearch.Test.csproj", "{7A6920AB-3BF1-43E2-8B60-6C0E34CD033D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

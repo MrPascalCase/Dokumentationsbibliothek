@@ -1,4 +1,4 @@
-﻿namespace DokubibImageSearch.Services;
+﻿namespace ImageSearch.Services;
 
 public class QueryBuilder
 {

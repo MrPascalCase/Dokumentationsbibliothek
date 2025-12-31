@@ -1,8 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using System.Net;
+using Microsoft.AspNetCore.Components;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace DokubibImageSearch.Services;
+namespace ImageSearch.Services;
 
+[Serializable]
 public class Image
 {
     // rdfs:label
@@ -135,7 +138,6 @@ public class Image
         }
     }
 
-
     private string GetThumbnailUrl(int maxWidth, int maxHeight)
     {
         string pattern = $"{Width},{Height}";
@@ -144,7 +146,6 @@ public class Image
         string replacement = $"{maxWidth},{maxHeight}";
         return ImageUrl.Replace(pattern, replacement);
     }
-
 
     public override string ToString()
     {
@@ -168,6 +169,85 @@ public class Image
             + $"{nameof(CopyRight)}: {CopyRight}, "
             + $"{nameof(Caption)}: {Caption}, "
             + $"{nameof(Subject)}: {string.Join(">", Subject)}";
+    }
+
+    public MarkupString ExplainSearch(string searchText, int contextLength,  string matchStyle)
+    {
+        if (string.IsNullOrWhiteSpace(searchText)) throw new ArgumentNullException(nameof(searchText));
+        if (string.IsNullOrWhiteSpace(matchStyle)) throw new ArgumentNullException(nameof(matchStyle));
+
+        // assume searchText is contained in this.Description (ignore case)
+        string description = Description ?? string.Empty;
+
+        int index = description.IndexOf(searchText, StringComparison.OrdinalIgnoreCase);
+        if (index < 0)
+        {
+            return new MarkupString(WebUtility.HtmlEncode(description));
+        }
+
+        int matchStart = index;
+        int matchEnd = index + searchText.Length;
+
+        // Determine context bounds
+        // contextLength = characters of context on each side (approximate) 
+        int contextStart = Math.Max(0, matchStart - contextLength);
+        int contextEnd = Math.Min(description.Length, matchEnd + contextLength);
+        
+        // Adjust contextStart to sentence boundary
+        if (contextStart > 0)
+        {
+            int sentenceIndex = description.LastIndexOfAny(new[] { '.', '!', '?' }, matchStart);
+            if (sentenceIndex >= 0 && sentenceIndex + 1 > contextStart)
+            {
+                contextStart = sentenceIndex + 1;
+            }
+        }
+
+// Adjust contextEnd to sentence boundary
+        if (contextEnd < description.Length)
+        {
+            int sentenceIndex = description.IndexOfAny(new[] { '.', '!', '?' }, matchEnd);
+            if (sentenceIndex >= 0 && sentenceIndex < contextEnd)
+            {
+                contextEnd = sentenceIndex;
+            }
+        }
+
+        // Adjust contextStart to word boundary
+        if (contextStart > 0)
+        {
+            int spaceIndex = description.LastIndexOf(' ', contextStart);
+            if (spaceIndex >= 0)
+            {
+                contextStart = spaceIndex + 1;
+            }
+        }
+
+        // Adjust contextEnd to word boundary
+        if (contextEnd < description.Length)
+        {
+            int spaceIndex = description.IndexOf(' ', contextEnd);
+            if (spaceIndex >= 0)
+            {
+                contextEnd = spaceIndex;
+            }
+        }
+
+        string before = description.Substring(contextStart, matchStart - contextStart);
+        string match = description.Substring(matchStart, searchText.Length);
+        string after = description.Substring(matchEnd, contextEnd - matchEnd);
+
+        bool hasLeadingEllipsis = contextStart > 0;
+        bool hasTrailingEllipsis = contextEnd < description.Length;
+
+        string result =
+            $"{(hasLeadingEllipsis ? "... " : string.Empty)}" +
+            $"{WebUtility.HtmlEncode(before)}" +
+            $"<span style=\"{WebUtility.HtmlEncode(matchStyle)}\">{WebUtility.HtmlEncode(match)}</span>" +
+            $"{WebUtility.HtmlEncode(after)}" +
+            $"{(hasTrailingEllipsis ? " ..." : string.Empty)}";
+
+        return new MarkupString(result);
     }
 
     internal static bool ProcessTitle(string title, int? number, out string[] subject, out string caption)

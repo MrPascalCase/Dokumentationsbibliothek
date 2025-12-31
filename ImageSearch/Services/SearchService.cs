@@ -8,10 +8,42 @@ namespace ImageSearch.Services;
 
 public class SearchService
 {
+    private readonly ILogger<SearchService>? _logger;
+    private readonly HttpClient _httpClient;
+
     // The API uses pages of size 25
     private const int ApiPageSize = 25;
 
-    private static readonly HttpClient HttpClient = new();
+    private const string SearchEndpoint = "https://api.dasch.swiss/v2/searchextended";
+    private const string CountEndpoint = "https://api.dasch.swiss/v2/searchextended/count";
+
+    public SearchService(HttpClient httpClient, ILogger<SearchService>? logger)
+    {
+        _logger = logger;
+        _httpClient = httpClient;
+    }
+
+    public async Task<int?> Count(Query query)
+    {
+        if (query == null) throw new ArgumentNullException(nameof(query));
+
+        QueryBuilder builder = new();
+        _logger?.LogInformation($"Loading Count for query='{query}'...");
+
+        string sparqlQuery = builder.BuildQuery(query, 0);
+        string content = await RunQuery(sparqlQuery, CountEndpoint);
+        int? count = ExtractCount(content);
+        if (count == null)
+        {
+            _logger?.LogWarning($"Failed to get the count for query='{query}'.");
+        }
+        else
+        {
+            _logger?.LogInformation($"Received the count {count} for query='{query}'.");
+        }
+
+        return count;
+    }
 
     public async Task<Ids> LoadIds(Query query, int start, int count)
     {
@@ -19,19 +51,20 @@ public class SearchService
         if (start < 0) throw new ArgumentOutOfRangeException(nameof(start));
         if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
 
-        QueryBuilder builder = new();
+        _logger?.LogInformation($"Loading Ids {start} to {start + count} for query='{query}'");
 
         int startPage = start / ApiPageSize; // Start page number of the API
         int additionalElementsStart = start - ApiPageSize * startPage; // number elements that are loaded additionally at the "front" due to paging
         int pageCount = (int)Math.Ceiling((count + additionalElementsStart) / (double)ApiPageSize);
 
         // Create tasks for each page
+        QueryBuilder builder = new();
         Task<string[]>[] tasks = Enumerable
             .Range(startPage, pageCount)
             .Select(async page =>
             {
                 string sparqlQuery = builder.BuildQuery(query, page);
-                string content = await RunQuery(sparqlQuery);
+                string content = await RunQuery(sparqlQuery, SearchEndpoint);
                 return ExtractIds(content);
             })
             .ToArray();
@@ -40,32 +73,38 @@ public class SearchService
         string[][] results = await Task.WhenAll(tasks);
 
         // Flatten results in page order
-        IEnumerable<string> ids = results.SelectMany(r => r);
+        string[] ids = results.SelectMany(r => r).ToArray();
 
         string[] relevantIds = ids
             .Skip(additionalElementsStart)
             .Take(count)
             .ToArray();
 
+        _logger?.LogInformation($"Using {relevantIds.Length} Ids of {ids.Length} Ids received from {tasks.Length} page(s).");
         return new Ids(relevantIds, tasks.Length);
     }
 
     public async Task<Image> LoadImage(string imageId)
     {
+        // Should really be Trace (which does is not shown in the dev console)
+        //_logger?.LogInformation($"Loading Image Id='{imageId}'...");
         string details = await QueryImageDetails(imageId);
-        return new Image(details);
+        Image img = new(details);
+
+        //_logger?.LogInformation("Image Loaded: {img}", img);
+        return img;
     }
 
-    private async Task<string> RunQuery(string query)
+    private async Task<string> RunQuery(string query, string endpoint)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
 
-        using HttpRequestMessage request = new(HttpMethod.Post, "https://api.dasch.swiss/v2/searchextended");
+        using HttpRequestMessage request = new(HttpMethod.Post, endpoint);
 
         request.Content = new StringContent(query, Encoding.UTF8, "application/sparql-query");
         request.Headers.Accept.ParseAdd("application/ld+json");
 
-        HttpResponseMessage response = await HttpClient.SendAsync(request);
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
 
         string content = await response.Content.ReadAsStringAsync();
@@ -75,38 +114,51 @@ public class SearchService
 
     private string[] ExtractIds(string content)
     {
-        List<string> ids = new();
-
         if (content == null) throw new ArgumentNullException(nameof(content));
 
-        JObject root =
-            JsonConvert.DeserializeObject<JObject>(content)
-            ?? throw new NullReferenceException(nameof(root));
-
+        JObject root = JsonConvert.DeserializeObject<JObject>(content) ?? throw new NullReferenceException(nameof(root));
         JToken? graph = root["@graph"];
-
-        // @graph might be null, if we find a single image match.
-        if (root["dokubib:hasBildnummer"] != null)
+        if (graph == null)
         {
-            JToken id = root["@id"] ?? throw new NullReferenceException(nameof(id));
-            return new[] { id.ToString(), };
+            // @graph might be null, if we find a single image match.
+            JToken? id = root["@id"];
+            if (id != null)
+            {
+                return new[] { id.ToString(), };
+            }
         }
 
         if (graph == null)
         {
-            throw new NullReferenceException(nameof(graph));
+            _logger?.LogWarning("Unable to extract Ids from content. content='{content}'", content);
+            return Array.Empty<string>();
         }
 
+        List<string> ids = new();
         foreach (JObject elem in graph.OfType<JObject>().ToArray())
         {
-            JToken id =
-                elem["@id"]
-                ?? throw new NullReferenceException(nameof(id));
-
+            JToken id = elem["@id"] ?? throw new NullReferenceException(nameof(id));
             ids.Add(id.ToString());
         }
 
         return ids.ToArray();
+    }
+
+    private int? ExtractCount(string content)
+    {
+        if (content == null) throw new ArgumentNullException(nameof(content));
+
+        //  content should look something like this:
+        //
+        // {
+        //     "schema:numberOfItems": 76,
+        //     "@context": {
+        //         "schema": "http://schema.org/"
+        //     }
+        // }
+
+        JObject root = JsonConvert.DeserializeObject<JObject>(content) ?? throw new NullReferenceException(nameof(root));
+        return root["schema:numberOfItems"]?.Value<int?>();
     }
 
     private async Task<string> QueryImageDetails(string id)
@@ -120,7 +172,7 @@ public class SearchService
 
         return await response.Content.ReadAsStringAsync();
     }
-    
+
     public readonly struct Ids : IReadOnlyList<string>
     {
         public IReadOnlyList<string> List { get; }

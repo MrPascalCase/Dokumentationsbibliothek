@@ -1,2 +1,2 @@
 ﻿using System.Runtime.CompilerServices;
-[assembly:InternalsVisibleTo("DokubibImageSearch.Test")]
+[assembly:InternalsVisibleTo("ImageSearch.Test")]

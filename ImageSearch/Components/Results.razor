@@ -1,67 +1,171 @@
-﻿@using DokubibImageSearch.Services
-@namespace DokubibImageSearch.Components
+﻿@using ImageSearch.Services
+@* @if (_resultCount != null) *@
+@* { *@
+@*     <div> *@
+@*         "@_searchText": Es bestehen @_resultCount Bilder. *@
+@*     </div> *@
+@* } *@
 
 @if (_results.Count > 0)
 {
-    <InfiniteScroll ObserverTargetId="EndMarker" FetchMore="FetchMore">
-        @for (int row = 0; row * ImagesPerRow < _results.Count; row++)
-        {
-            <div class="row-container">
-                <div class="image-row">
-                    @for (int col = 0; col < ImagesPerRow; col++)
+    @for (int row = 0; row * ImagesPerRow < _results.Count; row++)
+    {
+        <div class="row-container">
+            <div class="image-row">
+                @for (int col = 0; col < ImagesPerRow; col++)
+                {
+                    int index = ImagesPerRow * row + col;
+                    if (index < _results.Count)
                     {
-                        int index = ImagesPerRow * row + col;
-                        if (index < _results.Count)
-                        {
-                            <ImagePreview @key="_results[index]" ImageId="@_results[index]"/>
-                        }
+                        <ImagePreview @key="_results[index]" ImageId="@_results[index]" SearchText="@_searchText"/>
                     }
-                </div>
+                }
             </div>
-        }
+        </div>
+    }
 
-        <div id="EndMarker"></div>
-    </InfiniteScroll>
+    <div @ref="_endMarker">End Marker</div>
 }
 
 @code {
-    const int ImagesPerRow = 4;
-    const int ApiPaging = 20;
+    private const int ImagesPerRow = 4;
+    private const int ApiPaging = 20;
 
-    int _indexNextElement = 0;
-    List<string> _results = new();
+    string _searchText = string.Empty;
+    private int _indexNextElement = 0;
+    private List<string> _results = new();
+    private int? _resultCount = null;
+
+    private IJSObjectReference? _module;
+    private ElementReference? _endMarker;
+    private bool _didRegisterObserver = false;
+    private bool _isFetching = false;
 
     [Inject]
     public required SearchService SearchService { get; set; }
 
+    [Inject]
+    public required IJSRuntime JsRuntime { get; set; }
+
+    [Inject]
+    public required ILogger<Results> Logger { get; set; }
+
     [Parameter]
-    public required string SearchText { get; set; } = string.Empty;
+    public string? InitialSearchText { get; set; }
+
+    [Parameter]
+    public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
+
+    private CancellationTokenSource? _debounceCts;
+
+    public async Task UpdateSearch(string text)
+    {
+        // Cancel the previous pending action
+        if (_debounceCts != null)
+        {
+            await _debounceCts.CancelAsync();
+            _debounceCts.Dispose();
+            _debounceCts = null;
+        }
+
+        _debounceCts = new CancellationTokenSource();
+
+        try
+        {
+            // Wait for stability
+            await Task.Delay(1000, _debounceCts.Token);
+
+            // If we got here, no new calls occurred
+            await UpdateSearchStable(text);
+        }
+        catch (TaskCanceledException)
+        {
+            // Expected when new input arrives
+        }
+    }
 
     public async Task FetchMore()
     {
-        Query query = new() { Text = SearchText, };
+        if (_isFetching) return;
+
+        _isFetching = true;
+
+        Query query = BuildQuery();
+        Logger.LogInformation($"Requesting results {_indexNextElement} to {_indexNextElement + ApiPaging} for '{_searchText}'.");
         SearchService.Ids ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
 
         _indexNextElement += ApiPaging;
         _results.AddRange(ids);
+
+        _isFetching = false;
+        StateHasChanged();
     }
 
-    public async Task UpdateSearch(string text)
+    private async Task UpdateSearchStable(string text)
     {
-        SearchText = text;
+        Logger.LogInformation($"Setting '{nameof(_searchText)}' from '{_searchText}' to '{text}'.");
+        _searchText = text;
         _results = new List<string>();
         _indexNextElement = 0;
+
+        Query query = BuildQuery();
+        int? count = await SearchService.Count(query);
+        _resultCount = count;
+
+        // if (OnSearchInitialized != null)
+            await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
 
         if (!string.IsNullOrWhiteSpace(text))
         {
             await FetchMore();
         }
-
-        StateHasChanged();
+        else
+        {
+            // StateHasChanges already called in FetchMore (but also needed when we change the search to String.Empty)
+            StateHasChanged();
+        }
     }
 
     protected override async Task OnInitializedAsync()
     {
+        _searchText = InitialSearchText ?? string.Empty;
         await FetchMore();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_endMarker != null && !_didRegisterObserver)
+        {
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./observer.js");
+
+            DotNetObjectReference<Results> objectRef = DotNetObjectReference.Create(this);
+            await _module.InvokeVoidAsync("registerObserver", objectRef, _endMarker);
+
+            _didRegisterObserver = true;
+        }
+    }
+
+    private Query BuildQuery()
+    {
+        return new Query { Text = _searchText, };
+    }
+
+    [JSInvokable]
+    public async Task OnIntersection()
+    {
+        if (!_isFetching) await FetchMore();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module != null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // Blazor Server: ignore if circuit already gone
+        }
+    }
+
 }

@@ -1,28 +1,33 @@
 ﻿@page "/search"
-@using DokubibImageSearch.Components
+@using ImageSearch.Components
 
-<div class="container">
-    @* <button class="search-bar"> *@
-    @*     <svg data-icon="more" height="30" width="30" role="img" viewBox="0 0 20 20"> *@
-    @*         <path d="M3.5 8a2.5 2.5 0 100 5 2.5 2.5 0 100-5zM17.5 8a2.5 2.5 0 100 5 2.5 2.5 0 100-5zM10.5 8a2.5 2.5 0 100 5 2.5 2.5 0 100-5z" fill-rule="evenodd"> *@
-    @*         </path> *@
-    @*     </svg> *@
-    @* </button> *@
-    @* <div class="spacer"></div> *@
-    <input class="search-bar" @bind="Query" @bind:event="oninput" @bind:after="OnInput"/>
+
+<div class="outer-container">
+    <img src="logo.png" alt="Logo der Bibliothek St. Moritz"/>
+
+    <div class="inner-container">
+        <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
+        <input tabindex="0" class="search-input" @bind="Query" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
+
+        @if (_search is { ResultCount: not null, Query.Text: not null, })
+        {
+            <p>Für den Begriff "@_search.Query.Text" wurden @_search.ResultCount Bilder gefunden.</p>
+        }
+    </div>
 </div>
 
-<Results @ref="_results" SearchText="@Query"/>
-
+<Results @ref="_results" InitialSearchText="@Query" OnSearchInitialized="SearchInitialized"/>
 
 @code{
+
     [Inject]
     public required NavigationManager NavigationManager { get; set; }
-    
+
     [SupplyParameterFromQuery(Name = "query")]
     public string Query { get; set; } = string.Empty;
-    
+
     private Results? _results;
+    private SearchInitializedArgument? _search;
 
     private async Task OnInput()
     {
@@ -30,4 +35,8 @@
         if (_results != null) await _results.UpdateSearch(Query);
     }
 
+    private void SearchInitialized(SearchInitializedArgument argument)
+    {
+        _search = argument;
+    }
 }

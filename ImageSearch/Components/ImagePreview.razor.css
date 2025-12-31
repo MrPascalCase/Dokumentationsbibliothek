@@ -1,11 +1,22 @@
-
 .card {
-    padding: 5px;
+    margin: 5px;
+    padding: 0;
+    display: inline-block;
 }
 
 .image {
-    border-radius: 10px;
-    cursor: pointer;
+    display: block; 
+}
+
+.text {
+    font-size: 8px;
+    width: calc(100% - 6px);
+    padding: 3px;
+    background: var(--color-brown);
+}
+
+.title{
+    font-weight: bold;
 }
 
 .placeholder {
@@ -13,10 +24,15 @@
 }
 
 .blur-up {
-    filter: blur(10px);
+    filter: blur(10px) contrast(75%) brightness(75%);
     transition: filter 0.8s ease;
 }
 
+.blur-up:hover.loaded {
+    filter: blur(0) contrast(110%) brightness(110%);
+    cursor: pointer;
+}
+
 .blur-up.loaded {
-    filter: blur(0);
+    filter: blur(0) contrast(75%) brightness(75%)
 }
