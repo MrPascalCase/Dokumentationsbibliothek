@@ -1,11 +1,4 @@
 ﻿@using ImageSearch.Services
-@* @if (_resultCount != null) *@
-@* { *@
-@*     <div> *@
-@*         "@_searchText": Es bestehen @_resultCount Bilder. *@
-@*     </div> *@
-@* } *@
-
 @if (_results.Count > 0)
 {
     @for (int row = 0; row * ImagesPerRow < _results.Count; row++)
@@ -24,22 +17,26 @@
         </div>
     }
 
-    <div @ref="_endMarker">End Marker</div>
+    @if (_resultCount != 0 && _results.Count == _resultCount)
+    {
+        <div class="endpage-note">Alle gefundenen Bilder wurden angezeigt.</div>
+    }
+
+    @if (_results.Count < _resultCount)
+    {
+        <div @ref="_endMarker" class="endpage-note">
+            @if (_isFetching)
+            {
+                <div>Weitere Bilder werden geladen...</div>
+            }
+            <div class="force-fetch" @onclick="FetchMore">
+                [Bilder laden]
+            </div>
+        </div>
+    }
 }
 
 @code {
-    private const int ImagesPerRow = 4;
-    private const int ApiPaging = 20;
-
-    string _searchText = string.Empty;
-    private int _indexNextElement = 0;
-    private List<string> _results = new();
-    private int? _resultCount = null;
-
-    private IJSObjectReference? _module;
-    private ElementReference? _endMarker;
-    private bool _didRegisterObserver = false;
-    private bool _isFetching = false;
 
     [Inject]
     public required SearchService SearchService { get; set; }
@@ -56,9 +53,22 @@
     [Parameter]
     public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
 
+    private const int ImagesPerRow = 4;
+    private const int ApiPaging = 25;
+    private const int SearchDelayMs = 300;
+
+    private string _searchText = string.Empty;
+    private int _indexNextElement = 0;
+    private List<string> _results = new();
+    private int? _resultCount = null;
+
+    private IJSObjectReference? _module;
+    private ElementReference? _endMarker;
+    private bool _didRegisterObserver = false;
+    private bool _isFetching = false;
     private CancellationTokenSource? _debounceCts;
 
-    public async Task UpdateSearch(string text)
+    public async Task UpdateSearchEventually(string text)
     {
         // Cancel the previous pending action
         if (_debounceCts != null)
@@ -73,10 +83,10 @@
         try
         {
             // Wait for stability
-            await Task.Delay(1000, _debounceCts.Token);
+            await Task.Delay(SearchDelayMs, _debounceCts.Token);
 
             // If we got here, no new calls occurred
-            await UpdateSearchStable(text);
+            await UpdateSearch(text);
         }
         catch (TaskCanceledException)
         {
@@ -101,7 +111,7 @@
         StateHasChanged();
     }
 
-    private async Task UpdateSearchStable(string text)
+    public async Task UpdateSearch(string text)
     {
         Logger.LogInformation($"Setting '{nameof(_searchText)}' from '{_searchText}' to '{text}'.");
         _searchText = text;
@@ -112,9 +122,7 @@
         int? count = await SearchService.Count(query);
         _resultCount = count;
 
-        // if (OnSearchInitialized != null)
-            await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
-
+        await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
         if (!string.IsNullOrWhiteSpace(text))
         {
             await FetchMore();

@@ -1,5 +1,4 @@
-﻿
-.image-row {
+﻿.image-row {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -8,4 +7,15 @@
 .row-container {
     display: flex;
     justify-content: center;
+}
+
+.force-fetch {
+    color: var(--color-blue);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.endpage-note{
+    justify-self: center;
+    margin: 20px 20px 40px;
 }

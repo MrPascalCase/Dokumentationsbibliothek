@@ -9,7 +9,7 @@
 }
 
 .text {
-    font-size: 8px;
+    font-size: 10px;
     width: calc(100% - 6px);
     padding: 3px;
     background: var(--color-brown);

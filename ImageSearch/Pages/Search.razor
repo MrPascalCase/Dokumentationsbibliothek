@@ -32,7 +32,7 @@
     private async Task OnInput()
     {
         NavigationManager.NavigateTo($"/search?query={Query}");
-        if (_results != null) await _results.UpdateSearch(Query);
+        if (_results != null) await _results.UpdateSearchEventually(Query);
     }
 
     private void SearchInitialized(SearchInitializedArgument argument)
