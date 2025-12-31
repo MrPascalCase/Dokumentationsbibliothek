@@ -1,4 +1,5 @@
-﻿using ImageSearch.Services;
+﻿using System.Text.Encodings.Web;
+using ImageSearch.Services;
 
 namespace ImageSearch.Test;
 
@@ -9,7 +10,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_by_imageNr()
     {
         // Arrange
-        SearchService searchService = new( new HttpClient() , logger: null);
+        SearchService searchService = new(new HttpClient(), null);
 
         // Act
         SearchService.Ids ids = await searchService.LoadIds(new Query { ImageNr = 14826, }, 0, 25);
@@ -23,7 +24,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_fetch_ids_form_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient() , logger: null);
+        SearchService searchService = new(new HttpClient(), null);
 
         // Act
         SearchService.Ids ids = await searchService.LoadIds(new Query { Text = "Postauto", }, 0, 40);
@@ -37,7 +38,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_load_2_ids_from_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient() , logger: null);
+        SearchService searchService = new(new HttpClient(), null);
         SearchService.Ids ids = await searchService.LoadIds(new Query { Text = "Postauto", }, 0, 50);
 
         // Act
@@ -58,7 +59,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_load_ids_from_3_pages_that_would_fit_on_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient() , logger: null);
+        SearchService searchService = new(new HttpClient(), null);
         SearchService.Ids ids0To100 = await searchService.LoadIds(new Query { Text = "Schnee", }, 0, 100);
 
         // Act

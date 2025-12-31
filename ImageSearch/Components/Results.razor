@@ -1,13 +1,12 @@
-﻿@using ImageSearch.Services
-@if (_results.Count > 0)
+﻿@if (_results.Count > 0)
 {
-    @for (int row = 0; row * ImagesPerRow < _results.Count; row++)
+    @for (int row = 0; row * _imagesPerRow < _results.Count; row++)
     {
         <div class="row-container">
             <div class="image-row">
-                @for (int col = 0; col < ImagesPerRow; col++)
+                @for (int col = 0; col < _imagesPerRow; col++)
                 {
-                    int index = ImagesPerRow * row + col;
+                    int index = _imagesPerRow * row + col;
                     if (index < _results.Count)
                     {
                         <ImagePreview @key="_results[index]" ImageId="@_results[index]" SearchText="@_searchText"/>
@@ -34,146 +33,4 @@
             </div>
         </div>
     }
-}
-
-@code {
-
-    [Inject]
-    public required SearchService SearchService { get; set; }
-
-    [Inject]
-    public required IJSRuntime JsRuntime { get; set; }
-
-    [Inject]
-    public required ILogger<Results> Logger { get; set; }
-
-    [Parameter]
-    public string? InitialSearchText { get; set; }
-
-    [Parameter]
-    public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
-
-    private const int ImagesPerRow = 4;
-    private const int ApiPaging = 25;
-    private const int SearchDelayMs = 300;
-
-    private string _searchText = string.Empty;
-    private int _indexNextElement = 0;
-    private List<string> _results = new();
-    private int? _resultCount = null;
-
-    private IJSObjectReference? _module;
-    private ElementReference? _endMarker;
-    private bool _didRegisterObserver = false;
-    private bool _isFetching = false;
-    private CancellationTokenSource? _debounceCts;
-
-    public async Task UpdateSearchEventually(string text)
-    {
-        // Cancel the previous pending action
-        if (_debounceCts != null)
-        {
-            await _debounceCts.CancelAsync();
-            _debounceCts.Dispose();
-            _debounceCts = null;
-        }
-
-        _debounceCts = new CancellationTokenSource();
-
-        try
-        {
-            // Wait for stability
-            await Task.Delay(SearchDelayMs, _debounceCts.Token);
-
-            // If we got here, no new calls occurred
-            await UpdateSearch(text);
-        }
-        catch (TaskCanceledException)
-        {
-            // Expected when new input arrives
-        }
-    }
-
-    public async Task FetchMore()
-    {
-        if (_isFetching) return;
-
-        _isFetching = true;
-
-        Query query = BuildQuery();
-        Logger.LogInformation($"Requesting results {_indexNextElement} to {_indexNextElement + ApiPaging} for '{_searchText}'.");
-        SearchService.Ids ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
-
-        _indexNextElement += ApiPaging;
-        _results.AddRange(ids);
-
-        _isFetching = false;
-        StateHasChanged();
-    }
-
-    public async Task UpdateSearch(string text)
-    {
-        Logger.LogInformation($"Setting '{nameof(_searchText)}' from '{_searchText}' to '{text}'.");
-        _searchText = text;
-        _results = new List<string>();
-        _indexNextElement = 0;
-
-        Query query = BuildQuery();
-        int? count = await SearchService.Count(query);
-        _resultCount = count;
-
-        await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
-        if (!string.IsNullOrWhiteSpace(text))
-        {
-            await FetchMore();
-        }
-        else
-        {
-            // StateHasChanges already called in FetchMore (but also needed when we change the search to String.Empty)
-            StateHasChanged();
-        }
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        _searchText = InitialSearchText ?? string.Empty;
-        await FetchMore();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (_endMarker != null && !_didRegisterObserver)
-        {
-            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./observer.js");
-
-            DotNetObjectReference<Results> objectRef = DotNetObjectReference.Create(this);
-            await _module.InvokeVoidAsync("registerObserver", objectRef, _endMarker);
-
-            _didRegisterObserver = true;
-        }
-    }
-
-    private Query BuildQuery()
-    {
-        return new Query { Text = _searchText, };
-    }
-
-    [JSInvokable]
-    public async Task OnIntersection()
-    {
-        if (!_isFetching) await FetchMore();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        try
-        {
-            if (_module != null) await _module.DisposeAsync();
-        }
-        catch (JSDisconnectedException)
-        {
-            // Blazor Server: ignore if circuit already gone
-        }
-    }
-
 }
