@@ -1,5 +1,4 @@
-﻿using System.Text.Encodings.Web;
-using ImageSearch.Services;
+﻿using ImageSearch.Services;
 
 namespace ImageSearch.Test;
 

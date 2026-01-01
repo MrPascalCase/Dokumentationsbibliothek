@@ -16,7 +16,7 @@
     </div>
 </div>
 
-<WidthAware />
+<WidthAware/>
 
 <Results @ref="_results" InitialSearchText="@Query" OnSearchInitialized="SearchInitialized"/>
 
@@ -33,7 +33,8 @@
 
     private async Task OnInput()
     {
-        NavigationManager.NavigateTo($"/search?query={Query}");
+        string baseUri = NavigationManager.BaseUri;
+        NavigationManager.NavigateTo(baseUri + $"search?query={Query}");
         if (_results != null) await _results.UpdateSearchEventually(Query);
     }
 
@@ -41,4 +42,5 @@
     {
         _search = argument;
     }
+
 }

@@ -38,7 +38,7 @@
     private string Title => string.IsNullOrWhiteSpace(_result?.Caption) ? "<Titel nicht definiert>" : _result.Caption;
     private string Jahr => string.IsNullOrWhiteSpace(_result?.Year) ? "<Jahr nicht definiert>" : _result.Year;
     private string Size => $"width: {_width}px; height: {Height}px";
-    private string DetailUrl => $"/image?id={ImageId}";
+    private string DetailUrl => NavigationManager.BaseUri + $"image?id={ImageId}";
 
     private int _width = Height;
     private string _imageSrc = "./placeholder";

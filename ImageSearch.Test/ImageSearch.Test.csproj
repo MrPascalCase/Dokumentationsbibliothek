@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\ImageSearch\ImageSearch.csproj" />
+        <ProjectReference Include="..\ImageSearch\ImageSearch.csproj"/>
     </ItemGroup>
 
 </Project>

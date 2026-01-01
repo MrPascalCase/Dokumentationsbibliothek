@@ -27,9 +27,9 @@ public static class AspectRatios
                     /* 1 image is at most */ 1.553515, /* as wide as it is high */
                     /* 2 images are at most */ 3.047214, /* times as wide as they are high */
                     /* ... */ 4.504681,
-                    5.925536, 
+                    5.925536,
                     7.321462,
-                    8.696879 ,
+                    8.696879,
                     10.05039,
                     11.39046,
                     12.74229,

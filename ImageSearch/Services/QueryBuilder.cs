@@ -34,7 +34,7 @@ public class QueryBuilder
               
                 FILTER regex(?prop0Literal, "{{imgQuery.Text}}", "i") .
               }
-              
+
               OFFSET {{page}}
               """;
 

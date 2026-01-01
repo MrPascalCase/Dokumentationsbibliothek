@@ -1,2 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
-[assembly:InternalsVisibleTo("ImageSearch.Test")]
+
+[assembly: InternalsVisibleTo("ImageSearch.Test")]

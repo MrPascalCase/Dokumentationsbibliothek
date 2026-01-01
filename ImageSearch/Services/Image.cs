@@ -171,7 +171,7 @@ public class Image
             + $"{nameof(Subject)}: {string.Join(">", Subject)}";
     }
 
-    public MarkupString ExplainSearch(string searchText, int contextLength,  string matchStyle)
+    public MarkupString ExplainSearch(string searchText, int contextLength, string matchStyle)
     {
         if (string.IsNullOrWhiteSpace(searchText)) throw new ArgumentNullException(nameof(searchText));
         if (string.IsNullOrWhiteSpace(matchStyle)) throw new ArgumentNullException(nameof(matchStyle));
@@ -192,11 +192,11 @@ public class Image
         // contextLength = characters of context on each side (approximate) 
         int contextStart = Math.Max(0, matchStart - contextLength);
         int contextEnd = Math.Min(description.Length, matchEnd + contextLength);
-        
+
         // Adjust contextStart to sentence boundary
         if (contextStart > 0)
         {
-            int sentenceIndex = description.LastIndexOfAny(new[] { '.', '!', '?' }, matchStart);
+            int sentenceIndex = description.LastIndexOfAny(new[] { '.', '!', '?', }, matchStart);
             if (sentenceIndex >= 0 && sentenceIndex + 1 > contextStart)
             {
                 contextStart = sentenceIndex + 1;
@@ -206,7 +206,7 @@ public class Image
 // Adjust contextEnd to sentence boundary
         if (contextEnd < description.Length)
         {
-            int sentenceIndex = description.IndexOfAny(new[] { '.', '!', '?' }, matchEnd);
+            int sentenceIndex = description.IndexOfAny(new[] { '.', '!', '?', }, matchEnd);
             if (sentenceIndex >= 0 && sentenceIndex < contextEnd)
             {
                 contextEnd = sentenceIndex;

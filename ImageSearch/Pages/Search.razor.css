@@ -13,7 +13,7 @@
 h1 {
     font-family: Anton, sans-serif;
     text-transform: uppercase;
-    font-size: 18px;          
+    font-size: 18px;
     letter-spacing: -0.02em;
     font-weight: bold;
     border: none;
@@ -23,10 +23,10 @@ h1 {
 input {
     padding: 10px 15px;
     width: 100%;
-    
+
     border: none;
     outline: none;
-    
+
     background: var(--color-blue);
     color: white;
 
