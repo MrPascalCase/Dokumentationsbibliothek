@@ -1,7 +1,7 @@
 ﻿using ImageSearch.Services;
 using Microsoft.AspNetCore.Components;
 
-namespace ImageSearch.Test;
+namespace ImageSearch.Test.Services;
 
 [TestClass]
 public class ImageTest
@@ -139,6 +139,6 @@ public class ImageTest
 
         // Assert
         Console.WriteLine(markup);
-        Assert.AreEqual("Vorpflug <div class=\"match\">Postauto</div> bei der Schneer&#228;umung", markup.ToString());
+        Assert.AreEqual("Vorpflug <span style=\"match\">Postauto</span> bei der Schneer&#228;umung", markup.ToString());
     }
 }

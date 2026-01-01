@@ -9,9 +9,9 @@
         <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
         <input tabindex="0" class="search-input" @bind="Query" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
 
-        @if (_search is { ResultCount: not null, Query.Text: not null, })
+        @if ((_search?.ResultCount ?? 0) > 0)
         {
-            <p>Für den Begriff "@_search.Query.Text" wurden @_search.ResultCount Bilder gefunden.</p>
+            <p>Für den Begriff "@_search!.Query.Texts[0]" wurden @_search.ResultCount Bilder gefunden.</p>
         }
     </div>
 </div>

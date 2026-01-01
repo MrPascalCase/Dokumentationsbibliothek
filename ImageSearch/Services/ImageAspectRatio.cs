@@ -1,6 +1,6 @@
 ﻿namespace ImageSearch.Services;
 
-public static class AspectRatios
+public static class ImageAspectRatio
 {
     public static int SuggestNumberOfImages(int imgHeight, int imgGap, int screenWidth)
     {

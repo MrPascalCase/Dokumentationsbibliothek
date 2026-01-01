@@ -1,21 +1,39 @@
 ﻿namespace ImageSearch.Services;
 
-public class Query
+public class ImageQuery
 {
-    public string? Text { get; set; }
-    public int? ImageNr { get; set; }
+    public IReadOnlyList<string> Texts { get; }
+    public int? ImageNr { get; }
+    public int? Decade { get; }
+
+    public static ImageQuery FromText(string text)
+    {
+        return new ImageQuery(description: new[] { text });
+    }
+
+    public ImageQuery(int? decade = null, int? imageNr = null, IEnumerable<string>? description = null)
+    {
+        Texts = description?.ToArray() ?? Array.Empty<string>();
+        ImageNr = imageNr;
+        Decade = decade;
+    }
 
     public override string ToString()
     {
         List<string> elements = new();
-        if (!string.IsNullOrWhiteSpace(Text))
+        foreach (string text in Texts)
         {
-            elements.Add($"Text={Text}");
+            elements.Add($"Text={text}");
         }
 
         if (ImageNr != null)
         {
-            elements.Add($"ImageNr={ImageNr}");
+            elements.Add($"ImageNr={ImageNr.Value}");
+        }
+
+        if (Decade != null)
+        {
+            elements.Add($"Decade={Decade.Value}");
         }
 
         return string.Join(" ,", elements);

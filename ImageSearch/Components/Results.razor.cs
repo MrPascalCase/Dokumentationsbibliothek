@@ -68,9 +68,9 @@ public partial class Results : ComponentBase
 
         _isFetching = true;
 
-        Query query = BuildQuery();
+        ImageQuery query = BuildQuery();
         Logger.LogInformation($"Requesting results {_indexNextElement} to {_indexNextElement + ApiPaging} for '{_searchText}'.");
-        SearchService.Ids ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
+        ImageIdCollection ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
 
         _indexNextElement += ApiPaging;
         _results.AddRange(ids);
@@ -86,7 +86,7 @@ public partial class Results : ComponentBase
         _results = new List<string>();
         _indexNextElement = 0;
 
-        Query query = BuildQuery();
+        ImageQuery query = BuildQuery();
         int? count = await SearchService.Count(query);
         _resultCount = count;
 
@@ -129,9 +129,9 @@ public partial class Results : ComponentBase
         }
     }
 
-    private Query BuildQuery()
+    private ImageQuery BuildQuery()
     {
-        return new Query { Text = _searchText, };
+        return ImageQuery.FromText(_searchText);
     }
 
     [JSInvokable]
@@ -149,7 +149,7 @@ public partial class Results : ComponentBase
             _width = width;
 
             int imageMargin = 5; // see ImagePreview.razor.css
-            int imagesPerRow = AspectRatios.SuggestNumberOfImages(ImagePreview.Height, 2 * imageMargin, width);
+            int imagesPerRow = ImageAspectRatio.SuggestNumberOfImages(ImagePreview.Height, 2 * imageMargin, width);
             if (imagesPerRow != _imagesPerRow)
             {
                 Logger.LogInformation($"Number of images per row changes from {_imagesPerRow} to {imagesPerRow}.");

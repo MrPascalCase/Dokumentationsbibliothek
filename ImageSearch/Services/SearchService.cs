@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Text;
+﻿using System.Text;
 using System.Text.Encodings.Web;
+using ImageSearch.Services.QueryProcessing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -23,14 +23,14 @@ public class SearchService
         _httpClient = httpClient;
     }
 
-    public async Task<int?> Count(Query query)
+    public async Task<int?> Count(ImageQuery query)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
 
-        QueryBuilder builder = new();
+        QueryProcessor processor = new();
         _logger?.LogInformation($"Loading Count for query='{query}'...");
 
-        string sparqlQuery = builder.BuildQuery(query, 0);
+        string sparqlQuery = processor.BuildQuery(query);
         string content = await RunQuery(sparqlQuery, CountEndpoint);
         int? count = ExtractCount(content);
         if (count == null)
@@ -45,7 +45,14 @@ public class SearchService
         return count;
     }
 
-    public async Task<Ids> LoadIds(Query query, int start, int count)
+    public async Task<ImageIdCollection> LoadIds(ImageQuery query, int start, int count)
+    {
+        QueryProcessor processor = new();
+        string sparqlQuery = processor.BuildQuery(query);
+        return await LoadIds(sparqlQuery, start, count);
+    }
+
+    public async Task<ImageIdCollection> LoadIds(string query, int start, int count)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
         if (start < 0) throw new ArgumentOutOfRangeException(nameof(start));
@@ -58,13 +65,12 @@ public class SearchService
         int pageCount = (int)Math.Ceiling((count + additionalElementsStart) / (double)ApiPageSize);
 
         // Create tasks for each page
-        QueryBuilder builder = new();
         Task<string[]>[] tasks = Enumerable
             .Range(startPage, pageCount)
             .Select(async page =>
             {
-                string sparqlQuery = builder.BuildQuery(query, page);
-                string content = await RunQuery(sparqlQuery, SearchEndpoint);
+                string queryWithOffset = query + $"OFFSET {page}";
+                string content = await RunQuery(queryWithOffset, SearchEndpoint);
                 return ExtractIds(content);
             })
             .ToArray();
@@ -81,7 +87,7 @@ public class SearchService
             .ToArray();
 
         _logger?.LogInformation($"Using {relevantIds.Length} Ids of {ids.Length} Ids received from {tasks.Length} page(s).");
-        return new Ids(relevantIds, tasks.Length);
+        return new ImageIdCollection(relevantIds, tasks.Length);
     }
 
     public async Task<Image> LoadImage(string imageId)
@@ -93,6 +99,15 @@ public class SearchService
 
         //_logger?.LogInformation("Image Loaded: {img}", img);
         return img;
+    }
+
+    public async Task<Image[]> LoadImages(IEnumerable<string> imageIds)
+    {
+        if (imageIds == null) throw new ArgumentNullException(nameof(imageIds));
+
+        Task<Image>[] tasks = imageIds.Select(LoadImage).ToArray();
+        Image[] images = await Task.WhenAll(tasks);
+        return images;
     }
 
     private async Task<string> RunQuery(string query, string endpoint)
@@ -171,31 +186,5 @@ public class SearchService
         response.EnsureSuccessStatusCode();
 
         return await response.Content.ReadAsStringAsync();
-    }
-
-    public readonly struct Ids : IReadOnlyList<string>
-    {
-        public IReadOnlyList<string> List { get; }
-        public int PagesQueried { get; }
-
-        public Ids(string[] list, int pagesQueried)
-        {
-            List = list;
-            PagesQueried = pagesQueried;
-        }
-
-        public IEnumerator<string> GetEnumerator()
-        {
-            return List.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public int Count => List.Count;
-
-        public string this[int index] => List[index];
     }
 }
