@@ -10,6 +10,8 @@
 - search by author, decade, year, subject
 - fix season/jahreszeit
 - image details should have links to search by author, year, decade, subject
-- support for multiple search terms
+- ~~API support for multiple search terms~~
+- UI support for multiple search terms
 - layout optimization for mobile
 - focus-issue with the input
+- layout: force same width with scaling of rows?
