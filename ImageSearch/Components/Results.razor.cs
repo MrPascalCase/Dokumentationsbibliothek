@@ -16,7 +16,7 @@ public partial class Results : ComponentBase
     public required ILogger<Results> Logger { get; set; }
 
     [Parameter]
-    public string? InitialSearchText { get; set; }
+    public ImageQuery? InitialQuery { get; set; }
 
     [Parameter]
     public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
@@ -25,7 +25,7 @@ public partial class Results : ComponentBase
     private const int SearchDelayMs = 300;
 
     private int _imagesPerRow = 4;
-    private string _searchText = string.Empty;
+    private ImageQuery? _query;
     private int _indexNextElement = 0;
     private List<string> _results = new();
     private int? _resultCount = null;
@@ -36,7 +36,7 @@ public partial class Results : ComponentBase
     private bool _isFetching = false;
     private CancellationTokenSource? _debounceCts;
 
-    public async Task UpdateSearchEventually(string text)
+    public async Task UpdateSearchEventually(ImageQuery? query)
     {
         // Cancel the previous pending action
         if (_debounceCts != null)
@@ -54,7 +54,7 @@ public partial class Results : ComponentBase
             await Task.Delay(SearchDelayMs, _debounceCts.Token);
 
             // If we got here, no new calls occurred
-            await UpdateSearch(text);
+            await UpdateSearch(query);
         }
         catch (TaskCanceledException)
         {
@@ -65,34 +65,42 @@ public partial class Results : ComponentBase
     public async Task FetchMore()
     {
         if (_isFetching) return;
+        if (_query == null) return;
 
         _isFetching = true;
 
-        ImageQuery query = BuildQuery();
-        Logger.LogInformation($"Requesting results {_indexNextElement} to {_indexNextElement + ApiPaging} for '{_searchText}'.");
-        ImageIdCollection ids = await SearchService.LoadIds(query, _indexNextElement, ApiPaging);
+        Logger.LogInformation($"Requesting results {_indexNextElement} to {_indexNextElement + ApiPaging} for '{_query}'.");
+        ImageIdCollection ids = await SearchService.LoadIds(_query, _indexNextElement, ApiPaging);
 
         _indexNextElement += ApiPaging;
-        _results.AddRange(ids);
+
+        if (_results.Union(ids).Any())
+        {
+            foreach (var duplicate in _results.Union(ids))
+            {
+                Logger.LogWarning($"Image with Id='{duplicate}' is already in the results list.");
+            }
+        }
+        
+        _results.AddRange(ids.Except(_results));
 
         _isFetching = false;
         StateHasChanged();
     }
 
-    public async Task UpdateSearch(string text)
+    public async Task UpdateSearch(ImageQuery? query)
     {
-        Logger.LogInformation($"Setting '{nameof(_searchText)}' from '{_searchText}' to '{text}'.");
-        _searchText = text;
+        Logger.LogInformation($"Setting '{nameof(_query)}' from '{_query}' to '{query}'.");
+        _query = query;
         _results = new List<string>();
         _indexNextElement = 0;
 
-        ImageQuery query = BuildQuery();
-        int? count = await SearchService.Count(query);
+        int? count =  query == null ? 0 : await SearchService.Count(query);
         _resultCount = count;
-
-        await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
-        if (!string.IsNullOrWhiteSpace(text))
+      
+        if (query != null)
         {
+            await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
             await FetchMore();
         }
         else
@@ -104,7 +112,7 @@ public partial class Results : ComponentBase
 
     protected override async Task OnInitializedAsync()
     {
-        _searchText = InitialSearchText ?? string.Empty;
+        _query = InitialQuery;
         await FetchMore();
     }
 
@@ -127,11 +135,6 @@ public partial class Results : ComponentBase
             // subscribe to resize events
             await JsRuntime.InvokeVoidAsync("windowSize.registerResizeCallback", objectRef);
         }
-    }
-
-    private ImageQuery BuildQuery()
-    {
-        return ImageQuery.FromText(_searchText);
     }
 
     [JSInvokable]

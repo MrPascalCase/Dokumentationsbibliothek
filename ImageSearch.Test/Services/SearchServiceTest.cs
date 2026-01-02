@@ -12,7 +12,7 @@ public class SearchServiceTest
         SearchService searchService = new(new HttpClient(), null);
 
         // Act
-        ImageIdCollection ids = await searchService.LoadIds(new ImageQuery(imageNr: 14826), 0, 25);
+        ImageIdCollection ids = await searchService.LoadIds(new ImageQuery() {ImageNr = 14826}, 0, 25);
         Image image = await searchService.LoadImage(ids.Single());
 
         // Assert

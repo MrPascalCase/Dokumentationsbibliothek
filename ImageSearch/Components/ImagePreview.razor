@@ -8,56 +8,21 @@
     <div style="@($"width: {_width}px;")">
         <div class="text">
             <div class="title">@Title</div>
-            @if (_result != null && !string.IsNullOrWhiteSpace(SearchText))
+            @if (_result != null && Query != null)
             {
                 <div>
-                    @_result.ExplainSearch(SearchText, 40, "background: lightgreen; font-weight: bold;")
+                    @{
+                        string style = "background: lightgreen; font-weight: bold;";
+                        foreach (MarkupString explanation in _result.ExplainSearch(Query, 40, style))
+                        {
+                            <div>
+                            @explanation
+                            </div>
+                        }
+                    }
                 </div>
             }
             <div>@Jahr</div>
         </div>
     </div>
 </div>
-
-@code
-{
-    public const int Height = 250;
-
-    [Inject]
-    public required NavigationManager NavigationManager { get; set; }
-
-    [Inject]
-    public required SearchService SearchService { get; set; }
-
-    [Parameter]
-    public required string ImageId { get; set; }
-
-    [Parameter]
-    public string? SearchText { get; set; }
-
-    private string Title => string.IsNullOrWhiteSpace(_result?.Caption) ? "<Titel nicht definiert>" : _result.Caption;
-    private string Jahr => string.IsNullOrWhiteSpace(_result?.Year) ? "<Jahr nicht definiert>" : _result.Year;
-    private string Size => $"width: {_width}px; height: {Height}px";
-    private string DetailUrl => NavigationManager.BaseUri + $"image?id={ImageId}";
-
-    private int _width = Height;
-    private string _imageSrc = "./placeholder";
-    private string _imageAlt = "Bild wird geladen...";
-    private Image? _result;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _result = await SearchService.LoadImage(ImageId);
-
-        double aspectRatio = (double)_result.Width / _result.Height;
-        _width = (int)Math.Round(aspectRatio * Height);
-        _imageSrc = _result.GetThumbnailUrl(_width, Height);
-
-        StateHasChanged();
-    }
-
-    private void OnClick(MouseEventArgs obj)
-    {
-        NavigationManager.NavigateTo(DetailUrl);
-    }
-}

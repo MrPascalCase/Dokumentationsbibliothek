@@ -1,4 +1,6 @@
-﻿@if (_results.Count > 0)
+﻿Query=@_query
+
+@if (_results.Count > 0)
 {
     @for (int row = 0; row * _imagesPerRow < _results.Count; row++)
     {
@@ -9,7 +11,7 @@
                     int index = _imagesPerRow * row + col;
                     if (index < _results.Count)
                     {
-                        <ImagePreview @key="_results[index]" ImageId="@_results[index]" SearchText="@_searchText"/>
+                        <ImagePreview @key="_results[index]" ImageId="@_results[index]" Query="@_query"/>
                     }
                 }
             </div>

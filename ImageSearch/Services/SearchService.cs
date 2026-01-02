@@ -90,24 +90,26 @@ public class SearchService
         return new ImageIdCollection(relevantIds, tasks.Length);
     }
 
-    public async Task<Image> LoadImage(string imageId)
+    public async Task<Image?> LoadImage(string imageId)
     {
-        // Should really be Trace (which does is not shown in the dev console)
-        //_logger?.LogInformation($"Loading Image Id='{imageId}'...");
         string details = await QueryImageDetails(imageId);
-        Image img = new(details);
+        if (Image.IsValidImage(details, out string? error))
+        {
+            Image img = new(details);
+            return img;
+        }
 
-        //_logger?.LogInformation("Image Loaded: {img}", img);
-        return img;
+        _logger?.LogWarning($"Image with Id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{details}");
+        return null;
     }
 
     public async Task<Image[]> LoadImages(IEnumerable<string> imageIds)
     {
         if (imageIds == null) throw new ArgumentNullException(nameof(imageIds));
 
-        Task<Image>[] tasks = imageIds.Select(LoadImage).ToArray();
-        Image[] images = await Task.WhenAll(tasks);
-        return images;
+        Task<Image?>[] tasks = imageIds.Select(LoadImage).ToArray();
+        Image?[] images = await Task.WhenAll(tasks);
+        return images.Where(img => img != null).Select(img => img!).ToArray();
     }
 
     private async Task<string> RunQuery(string query, string endpoint)

@@ -48,7 +48,7 @@ public class QueryProcessor
 
         if (query.ImageNr != null) components.Add(new ImageNrFilter(this, query.ImageNr.Value));
         if (query.Decade != null) components.Add(new DecadeFiler(this, query.Decade.Value));
-        foreach (string text in query.Texts) components.Add(new DescriptionFilter(this, text));
+        foreach (string text in query.Description) components.Add(new DescriptionFilter(this, text));
 
         return components;
     }

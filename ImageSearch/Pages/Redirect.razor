@@ -1,14 +1,1 @@
 ﻿@page "/"
-@inject NavigationManager NavigationManager
-
-@code
-{
-    protected override void OnInitialized()
-    {
-        string baseUri = NavigationManager.BaseUri;
-        NavigationManager.NavigateTo(baseUri + "search");
-        // NavigationManager.NavigateTo("/image?id=http://rdfh.ch/0804/7xNi77doS76Q2NAKyWKdlA");
-        // NavigationManager.NavigateTo("/search?query=postauto");
-        base.OnInitialized();
-    }
-}

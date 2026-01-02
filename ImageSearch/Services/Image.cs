@@ -102,6 +102,33 @@ public class Image
             Subject = subject;
         }
     }
+    
+    public static bool IsValidImage(string content, out string error)
+    {
+        if (content == null) throw new ArgumentNullException(nameof(content));
+        JObject root = JsonConvert.DeserializeObject<JObject>(content) ?? throw new NullReferenceException(nameof(root));
+
+        if (root["knora-api:hasStillImageFileValue"]?["knora-api:fileValueAsUrl"]?["@value"]?.Value<string?>() == null)
+        {
+            error = "Image file URL is missing (knora-api:hasStillImageFileValue\\knora-api:fileValueAsUrl\\@value)";
+            return false;
+        }
+
+        if (root["knora-api:hasStillImageFileValue"]?["knora-api:stillImageFileValueHasDimX"]?.Value<int?>() == null)
+        {
+            error = "Image dim x is missing (knora-api:hasStillImageFileValue\\knora-api:stillImageFileValueHasDimX)";
+            return false;
+        }
+
+        if (root["knora-api:hasStillImageFileValue"]?["knora-api:stillImageFileValueHasDimY"]?.Value<int?>() == null)
+        {
+            error = "Image dim y is missing (knora-api:hasStillImageFileValue\\knora-api:stillImageFileValueHasDimY)";
+            return false;
+        }
+
+        error = string.Empty;
+        return true;
+    }
 
     public string GetThumbnailUrl(int? maxWidth, int? maxHeight)
     {
@@ -171,7 +198,15 @@ public class Image
             + $"{nameof(Subject)}: {string.Join(">", Subject)}";
     }
 
-    public MarkupString ExplainSearch(string searchText, int contextLength, string matchStyle)
+    public MarkupString[] ExplainSearch(ImageQuery query, int contextLength, string matchStyle)
+    {
+        if (query == null) throw new ArgumentNullException(nameof(query));
+        if (string.IsNullOrWhiteSpace(matchStyle)) throw new ArgumentNullException(nameof(matchStyle));
+        
+        return query.Description.Select(d => ExplainSearch(d, contextLength, matchStyle)).ToArray();
+    }
+    
+     public MarkupString ExplainSearch(string searchText, int contextLength, string matchStyle)
     {
         if (string.IsNullOrWhiteSpace(searchText)) throw new ArgumentNullException(nameof(searchText));
         if (string.IsNullOrWhiteSpace(matchStyle)) throw new ArgumentNullException(nameof(matchStyle));
@@ -203,7 +238,7 @@ public class Image
             }
         }
 
-// Adjust contextEnd to sentence boundary
+        // Adjust contextEnd to sentence boundary
         if (contextEnd < description.Length)
         {
             int sentenceIndex = description.IndexOfAny(new[] { '.', '!', '?', }, matchEnd);

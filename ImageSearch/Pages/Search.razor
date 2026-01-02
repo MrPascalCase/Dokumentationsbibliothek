@@ -1,46 +1,18 @@
 ﻿@page "/search"
 @using ImageSearch.Components
 
-
 <div class="outer-container">
     <img src="logo.png" alt="Logo der Bibliothek St. Moritz"/>
 
     <div class="inner-container">
         <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
-        <input tabindex="0" class="search-input" @bind="Query" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
+        <input tabindex="0" class="search-input" @bind="_inputText" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
 
         @if ((_search?.ResultCount ?? 0) > 0)
         {
-            <p>Für den Begriff "@_search!.Query.Texts[0]" wurden @_search.ResultCount Bilder gefunden.</p>
+            <p>Für den Begriff "@_search!.Query.Description[0]" wurden @_search.ResultCount Bilder gefunden.</p>
         }
     </div>
 </div>
 
-<WidthAware/>
-
-<Results @ref="_results" InitialSearchText="@Query" OnSearchInitialized="SearchInitialized"/>
-
-@code{
-
-    [Inject]
-    public required NavigationManager NavigationManager { get; set; }
-
-    [SupplyParameterFromQuery(Name = "query")]
-    public string Query { get; set; } = string.Empty;
-
-    private Results? _results;
-    private SearchInitializedArgument? _search;
-
-    private async Task OnInput()
-    {
-        string baseUri = NavigationManager.BaseUri;
-        NavigationManager.NavigateTo(baseUri + $"search?query={Query}");
-        if (_results != null) await _results.UpdateSearchEventually(Query);
-    }
-
-    private void SearchInitialized(SearchInitializedArgument argument)
-    {
-        _search = argument;
-    }
-
-}
+<Results @ref="_results" InitialQuery="_query" OnSearchInitialized="SearchInitialized"/>

@@ -1,5 +1,4 @@
 ﻿@page "/image"
-@using ImageSearch.Services
 
 <div class="outer-container">
     <div class="inner-container">
@@ -53,23 +52,3 @@
         </div>
     </div>
 </div>
-
-@code
-{
-    [SupplyParameterFromQuery(Name = "id")]
-    public string ImageId { get; set; } = string.Empty;
-
-    [Inject]
-    public required SearchService SearchService { get; set; }
-
-    private string _imageSrc = "./placeholder";
-    private readonly string _imageAlt = "Bild wird geladen...";
-    private Services.Image? _result;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _result = await SearchService.LoadImage(ImageId);
-        _imageSrc = _result.ImageUrl;
-        StateHasChanged();
-    }
-}
