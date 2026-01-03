@@ -13,6 +13,7 @@ public partial class Search : ComponentBase
     private SearchInitializedArgument? _search;
     private ImageQuery? _query;
     private string _inputText = string.Empty;
+    private string? _overlayImageId;
 
     protected override void OnParametersSet()
     {
@@ -42,8 +43,14 @@ public partial class Search : ComponentBase
         if (_results != null) await _results.UpdateSearchEventually(_query);
     }
 
-    private void SearchInitialized(SearchInitializedArgument argument)
+    private void OnSearchInitialized(SearchInitializedArgument arg)
     {
-        _search = argument;
+        _search = arg;
+    }
+
+    private async Task OnImageSelected(string imageId)
+    {
+       _overlayImageId = imageId;
+       await InvokeAsync(StateHasChanged);
     }
 }

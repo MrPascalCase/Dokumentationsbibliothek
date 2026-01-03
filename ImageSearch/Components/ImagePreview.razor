@@ -1,7 +1,6 @@
-﻿@using ImageSearch.Services
-<div class="card">
-    <div style="@Size" @onclick="OnClick">
-        <a href="@DetailUrl">
+﻿<div class="card">
+    <div style="@Size">
+        <a href="@DetailUrl" @onclick="OnClick" @onclick:preventDefault>
             <img class="image placeholder blur-up" onload="this.classList.add('loaded')" style="@Size" src="@_imageSrc" alt="@_imageAlt"/>
         </a>
     </div>
@@ -16,7 +15,7 @@
                         foreach (MarkupString explanation in _result.ExplainSearch(Query, 40, style))
                         {
                             <div>
-                            @explanation
+                                @explanation
                             </div>
                         }
                     }

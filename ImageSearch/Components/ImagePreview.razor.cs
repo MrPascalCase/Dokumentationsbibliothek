@@ -19,6 +19,9 @@ public partial class ImagePreview : ComponentBase
 
     [Parameter]
     public ImageQuery? Query { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> OnImageSelected { get; set; }
 
     private string Title => string.IsNullOrWhiteSpace(_result?.Caption) ? "<Titel nicht definiert>" : _result.Caption;
     private string Jahr => string.IsNullOrWhiteSpace(_result?.Year) ? "<Jahr nicht definiert>" : _result.Year;
@@ -30,8 +33,10 @@ public partial class ImagePreview : ComponentBase
     private string _imageAlt = "Bild wird geladen...";
     private Image? _result;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
+        if (string.IsNullOrWhiteSpace(ImageId)) throw new NullReferenceException(nameof(ImageId));
+
         _result = await SearchService.LoadImage(ImageId);
         if (_result == null) return;
 
@@ -42,8 +47,15 @@ public partial class ImagePreview : ComponentBase
         StateHasChanged();
     }
 
-    private void OnClick(MouseEventArgs obj)
+    private async Task OnClick(MouseEventArgs obj)
     {
-        NavigationManager.NavigateTo(DetailUrl);
+        if (OnImageSelected.HasDelegate)
+        {
+            await OnImageSelected.InvokeAsync(ImageId);
+        }
+        else
+        {
+            NavigationManager.NavigateTo(DetailUrl);
+        }
     }
 }

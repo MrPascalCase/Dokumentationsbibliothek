@@ -18,3 +18,5 @@
 - explain search:
    + better support for "." (st. moritz)
    + better support for multiple words in close proximity
+- add a magnifying glass icon to the search bar
+- use a single strategy for javascript loading

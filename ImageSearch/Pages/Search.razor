@@ -1,18 +1,29 @@
 ﻿@page "/search"
 @using ImageSearch.Components
 
-<div class="outer-container">
-    <img src="logo.png" alt="Logo der Bibliothek St. Moritz"/>
+@if (_overlayImageId != null)
+{
+    <Overlay OnOverlayClosed="@(() => { _overlayImageId = null; })">
+        <ImageDetail ImageId="@_overlayImageId"/>
+    </Overlay>
+}
 
-    <div class="inner-container">
-        <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
-        <input tabindex="0" class="search-input" @bind="_inputText" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
+<div class="main">
+    <div class="outer-container">
+        <img src="logo.png" alt="Logo der Bibliothek St. Moritz"/>
 
-        @if ((_search?.ResultCount ?? 0) > 0)
-        {
-            <p>Für den Begriff "@_search!.Query.Description[0]" wurden @_search.ResultCount Bilder gefunden.</p>
-        }
+        <div class="inner-container">
+            <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
+            <input tabindex="0" class="search-input" @bind="_inputText" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
+
+            @if ((_search?.ResultCount ?? 0) > 0)
+            {
+                // TODO Begriffserklähung
+                <p>Für den Begriff "@_search!.Query!.Description[0]" wurden @_search.ResultCount Bilder gefunden.</p>
+            }
+        </div>
     </div>
+
+    <Results @ref="_results" InitialQuery="_query" OnSearchInitialized="OnSearchInitialized" OnImageSelected="@OnImageSelected"/>
 </div>
 
-<Results @ref="_results" InitialQuery="_query" OnSearchInitialized="SearchInitialized"/>

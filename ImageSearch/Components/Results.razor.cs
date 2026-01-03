@@ -20,6 +20,9 @@ public partial class Results : ComponentBase
 
     [Parameter]
     public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
+    
+    [Parameter]
+    public EventCallback<string> OnImageSelected { get; set; }
 
     private const int ApiPaging = 25;
     private const int SearchDelayMs = 300;

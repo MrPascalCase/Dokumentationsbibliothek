@@ -71,7 +71,14 @@ public class SearchService
             {
                 string queryWithOffset = query + $"OFFSET {page}";
                 string content = await RunQuery(queryWithOffset, SearchEndpoint);
-                return ExtractIds(content);
+                string[] ids = ExtractIds(content);
+                foreach (string id in ids)
+                {
+                    if (string.IsNullOrWhiteSpace(id))
+                        _logger?.LogWarning($"Query returned Image Ids which are null or whitespace (id='{id}', query='{queryWithOffset}').");
+                }
+                
+                return ids.Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
             })
             .ToArray();
 
@@ -92,6 +99,8 @@ public class SearchService
 
     public async Task<Image?> LoadImage(string imageId)
     {
+        if (string.IsNullOrWhiteSpace(imageId)) throw new ArgumentNullException(nameof(imageId));
+
         string details = await QueryImageDetails(imageId);
         if (Image.IsValidImage(details, out string? error))
         {
@@ -180,12 +189,17 @@ public class SearchService
 
     private async Task<string> QueryImageDetails(string id)
     {
+        if (string.IsNullOrWhiteSpace(id)) throw new ArgumentNullException(nameof(id));
+        
         HttpClient client = new();
         string encode = UrlEncoder.Default.Encode(id);
         using HttpRequestMessage request = new(HttpMethod.Get, $"https://api.dasch.swiss/v2/resources/{encode}");
 
         HttpResponseMessage response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Failed to load the image with id='{id}'. StatusCode: {response.StatusCode}. Reason: {response.ReasonPhrase}.");
+        }
 
         return await response.Content.ReadAsStringAsync();
     }
