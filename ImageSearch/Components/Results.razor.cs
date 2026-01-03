@@ -20,7 +20,7 @@ public partial class Results : ComponentBase
 
     [Parameter]
     public EventCallback<SearchInitializedArgument> OnSearchInitialized { get; set; }
-    
+
     [Parameter]
     public EventCallback<string> OnImageSelected { get; set; }
 
@@ -35,9 +35,10 @@ public partial class Results : ComponentBase
     private int? _width = null;
     private IJSObjectReference? _module;
     private ElementReference? _endMarker;
-    private bool _didRegisterObserver = false;
+    private bool _didInitializeJs = false;
     private bool _isFetching = false;
     private CancellationTokenSource? _debounceCts;
+    private DotNetObjectReference<Results>? _objectRef;
 
     public async Task UpdateSearchEventually(ImageQuery? query)
     {
@@ -79,12 +80,12 @@ public partial class Results : ComponentBase
 
         if (_results.Union(ids).Any())
         {
-            foreach (var duplicate in _results.Union(ids))
+            foreach (string duplicate in _results.Union(ids))
             {
                 Logger.LogWarning($"Image with Id='{duplicate}' is already in the results list.");
             }
         }
-        
+
         _results.AddRange(ids.Except(_results));
 
         _isFetching = false;
@@ -98,9 +99,9 @@ public partial class Results : ComponentBase
         _results = new List<string>();
         _indexNextElement = 0;
 
-        int? count =  query == null ? 0 : await SearchService.Count(query);
+        int? count = query == null ? 0 : await SearchService.Count(query);
         _resultCount = count;
-      
+
         if (query != null)
         {
             await OnSearchInitialized.InvokeAsync(new SearchInitializedArgument { Query = query, ResultCount = count, });
@@ -121,22 +122,25 @@ public partial class Results : ComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        DotNetObjectReference<Results> objectRef = DotNetObjectReference.Create(this);
-
-        if (_endMarker != null && !_didRegisterObserver)
+        if (_endMarker != null && !_didInitializeJs)
         {
-            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./observer.js");
-            await _module.InvokeVoidAsync("registerObserver", objectRef, _endMarker);
-            _didRegisterObserver = true;
+            _module = await JsRuntime.InvokeAsync<IJSObjectReference>("import", "./Components/Results.razor.js");
+            await Task.WhenAll(
+                HandleInitialResizeAsync(_module),
+                InitializeJsAsync(_module));
         }
 
-        if (firstRender)
+        async Task HandleInitialResizeAsync(IJSObjectReference module)
         {
-            // initial value
-            _width = await JsRuntime.InvokeAsync<int>("windowSize.getWidth");
+            int width = await module.InvokeAsync<int>("getWidth");
+            await OnBrowserResize(width);
+        }
 
-            // subscribe to resize events
-            await JsRuntime.InvokeVoidAsync("windowSize.registerResizeCallback", objectRef);
+        async Task InitializeJsAsync(IJSObjectReference module)
+        {
+            _objectRef = DotNetObjectReference.Create(this);
+            await module.InvokeVoidAsync("init", _objectRef, _endMarker);
+            _didInitializeJs = true;
         }
     }
 
@@ -147,7 +151,7 @@ public partial class Results : ComponentBase
     }
 
     [JSInvokable]
-    public void OnBrowserResize(int width)
+    public async Task OnBrowserResize(int width)
     {
         if (width != _width)
         {
@@ -161,7 +165,7 @@ public partial class Results : ComponentBase
                 Logger.LogInformation($"Number of images per row changes from {_imagesPerRow} to {imagesPerRow}.");
                 _imagesPerRow = imagesPerRow;
 
-                InvokeAsync(StateHasChanged);
+                await InvokeAsync(StateHasChanged);
             }
             else
             {
@@ -174,11 +178,22 @@ public partial class Results : ComponentBase
     {
         try
         {
-            if (_module != null) await _module.DisposeAsync();
+            if (_module != null)
+            {
+                await _module.InvokeVoidAsync("dispose");
+                await _module.DisposeAsync();
+                _module = null;
+            }
         }
         catch (JSDisconnectedException)
         {
             // Blazor Server: ignore if circuit already gone
+        }
+        
+        if (_objectRef != null)
+        {
+            _objectRef.Dispose();
+            _objectRef = null;
         }
     }
 }

@@ -21,16 +21,17 @@
         <div class="endpage-note">Alle gefundenen Bilder wurden angezeigt.</div>
     }
 
-    @if (_results.Count < _resultCount)
-    {
-        <div @ref="_endMarker" class="endpage-note">
+    <div @ref="_endMarker" class="endpage-note">
+        @if (_results.Count < _resultCount)
+        {
             @if (_isFetching)
             {
                 <div>Weitere Bilder werden geladen...</div>
             }
+
             <div class="force-fetch" @onclick="FetchMore">
                 [Bilder laden]
             </div>
-        </div>
-    }
+        }
+    </div>
 }

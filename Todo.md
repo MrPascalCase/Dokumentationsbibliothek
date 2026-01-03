@@ -3,7 +3,7 @@
 - routing does not work initially on github pages:
   https://mrpascalcase.github.io/Dokumentationsbibliothek/search
 -> 404
-- resize does not work initially
+- ~~resize does not work initially~~
 - execute search immediately with 'enter'
 - show image preview as overlay
 - fix the placeholder in the image preview
@@ -19,4 +19,4 @@
    + better support for "." (st. moritz)
    + better support for multiple words in close proximity
 - add a magnifying glass icon to the search bar
-- use a single strategy for javascript loading
+- ~~use a single strategy for javascript loading~~
