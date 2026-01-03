@@ -16,7 +16,9 @@
 - focus-issue with the input
 - layout: force same width with scaling of rows?
 - explain search:
-   + better support for "." (st. moritz)
-   + better support for multiple words in close proximity
+   + better support for "." (st. moritz) (also ca.)
+   + ~~better support for multiple words in close proximity~~
+   + add more tests for justification logic.
 - add a magnifying glass icon to the search bar
 - ~~use a single strategy for javascript loading~~
+- check and resolve warnings that images are loaded twice

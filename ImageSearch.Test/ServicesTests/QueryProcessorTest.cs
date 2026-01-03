@@ -1,7 +1,7 @@
 using ImageSearch.Services;
 using ImageSearch.Services.QueryProcessing;
 
-namespace ImageSearch.Test.Services;
+namespace ImageSearch.Test.ServicesTests;
 
 [TestClass]
 public class QueryProcessorTest

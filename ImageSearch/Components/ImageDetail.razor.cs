@@ -17,7 +17,7 @@ public partial class ImageDetail : ComponentBase
     private Image? _result;
     
     string AspectRatioStyle =>
-        (_result != null)
+        _result != null
             ? $"aspect-ratio: {_result.Width} / {_result.Height};"
             : "aspect-ratio: 1 / 1;"; // default square placeholder
 

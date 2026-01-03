@@ -1,4 +1,5 @@
 using ImageSearch.Services;
+using ImageSearch.Services.Justifications;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -19,7 +20,7 @@ public partial class ImagePreview : ComponentBase
 
     [Parameter]
     public ImageQuery? Query { get; set; }
-    
+
     [Parameter]
     public EventCallback<string> OnImageSelected { get; set; }
 
@@ -32,6 +33,7 @@ public partial class ImagePreview : ComponentBase
     private string _imageSrc = "./placeholder";
     private string _imageAlt = "Bild wird geladen...";
     private Image? _result;
+    private JustificationBuilder _builder = new();
 
     protected override async Task OnParametersSetAsync()
     {

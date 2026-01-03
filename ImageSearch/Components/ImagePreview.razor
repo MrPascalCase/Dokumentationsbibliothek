@@ -10,15 +10,7 @@
             @if (_result != null && Query != null)
             {
                 <div>
-                    @{
-                        string style = "background: lightgreen; font-weight: bold;";
-                        foreach (MarkupString explanation in _result.ExplainSearch(Query, 40, style))
-                        {
-                            <div>
-                                @explanation
-                            </div>
-                        }
-                    }
+                    @_builder.Justify(Query, _result)
                 </div>
             }
             <div>@Jahr</div>

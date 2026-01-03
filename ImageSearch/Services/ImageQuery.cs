@@ -127,6 +127,36 @@ public class ImageQuery
         return url;
     }
 
+    public string ToDescription()
+    {
+        // Is used for the text
+        // <p>Für die Suche nach <ToDescription()> wurden <Count> Bilder gefunden.</p>
+
+        string searchTerms = string.Empty;
+        if (Description.Any()) searchTerms += $"\"{Description[0]}\"";
+        foreach (string elem in Description.Skip(1).Reverse().Skip(1).Reverse()) searchTerms += $", \"{elem}\"";
+        if (Description.Skip(1).Any()) searchTerms += $" und \"{Description.Last()}\"";
+
+        List<string> elements = new() { searchTerms, };
+        if (Decade != null)
+        {
+            elements.Add(InParenthesis($"Dekade: {Decade}"));
+        }
+
+        if (ImageNr != null)
+        {
+            elements.Add(InParenthesis($"Bildnummer: {ImageNr}"));
+        }
+
+        return string.Join(" ", elements);
+
+        string InParenthesis(string text)
+        {
+            bool useParenthesis = Description.Any();
+            return useParenthesis ? $"({text})" : text;
+        }
+    }
+
     private static bool TryParseDecade(string element, out int decade)
     {
         string lower = element.ToLowerInvariant();
