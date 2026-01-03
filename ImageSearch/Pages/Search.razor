@@ -14,7 +14,13 @@
 
         <div class="inner-container">
             <h1>Bildersuche der Dokumentationsbibliothek St. Moritz</h1>
-            <input tabindex="0" class="search-input" @bind="_inputText" placeholder="Bilder suchen..." @bind:event="oninput" @bind:after="OnInput"/>
+            <input tabindex="0"
+                   class="search-input"
+                   @bind="_inputText"
+                   placeholder="Bilder suchen..."
+                   @bind:event="oninput"
+                   @bind:after="@(() => QueueSearch(false))"
+                   @onchange="@(() => QueueSearch(true))"/>
 
             @if (_search?.Query != null && (_search?.ResultCount ?? 0) > 0)
             {

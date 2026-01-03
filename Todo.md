@@ -4,7 +4,7 @@
   https://mrpascalcase.github.io/Dokumentationsbibliothek/search
 -> 404
 - ~~resize does not work initially~~
-- execute search immediately with 'enter'
+- ~~execute search immediately with 'enter'~~
 - show image preview as overlay
 - fix the placeholder in the image preview
 - search by author, ~~decade~~, year, subject

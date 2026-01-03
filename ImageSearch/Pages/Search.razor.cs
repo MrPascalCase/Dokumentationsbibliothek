@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace ImageSearch.Pages;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public partial class Search : ComponentBase
 {
     [Inject]
@@ -26,21 +27,23 @@ public partial class Search : ComponentBase
         _query = query;
     }
 
-    private async Task OnInput()
+    private async Task QueueSearch(bool forced)
     {
         string baseUri = NavigationManager.BaseUri;
         _query = ImageQuery.ParseSearchText(_inputText);
+        NavigationManager.NavigateTo(baseUri + "search" + (_query?.ToUrl() ?? string.Empty));
 
-        if (_query == null)
+        if (_results != null)
         {
-            NavigationManager.NavigateTo(baseUri + "search");
+            if (forced)
+            {
+                await _results.UpdateSearch(_query);
+            }
+            else
+            {
+                await _results.UpdateSearchEventually(_query);
+            }
         }
-        else
-        {
-            NavigationManager.NavigateTo(baseUri + "search" + _query.ToUrl());
-        }
-
-        if (_results != null) await _results.UpdateSearchEventually(_query);
     }
 
     private void OnSearchInitialized(SearchInitializedArgument arg)
@@ -50,7 +53,7 @@ public partial class Search : ComponentBase
 
     private async Task OnImageSelected(string imageId)
     {
-       _overlayImageId = imageId;
-       await InvokeAsync(StateHasChanged);
+        _overlayImageId = imageId;
+        await InvokeAsync(StateHasChanged);
     }
 }
