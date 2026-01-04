@@ -1,5 +1,5 @@
 /* /Components/ImageDetail.razor.rz.scp.css */
-.container[b-4wscb0bba1] {
+.container[b-rxa0qk1kjj] {
     display: grid;
     justify-content: center;
     align-content: center;
@@ -8,7 +8,7 @@
     min-height: 95vh;
 }
 
-.left[b-4wscb0bba1] {
+.left[b-rxa0qk1kjj] {
     background: white;
     border: 2px dashed #aaa;
     max-width: 70vw; 
@@ -16,7 +16,7 @@
     position: relative;
 }
 
-.placeholder[b-4wscb0bba1] {
+.placeholder[b-rxa0qk1kjj] {
     background: url('placeholder.png') center center / cover no-repeat;
     filter: contrast(70%) brightness(115%);
     position: absolute;
@@ -24,7 +24,7 @@
     z-index: 1;
 }
 
-.hint[b-4wscb0bba1] {
+.hint[b-rxa0qk1kjj] {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -35,68 +35,68 @@
     font-weight: bolder;
 }
 
-.image[b-4wscb0bba1] {
+.image[b-rxa0qk1kjj] {
     max-width: 70vw;
     position: absolute;
     inset: 0;
     z-index: 3;
 }
 
-.right[b-4wscb0bba1] {
+.right[b-rxa0qk1kjj] {
     max-width: 30vw;
     background: var(--color-brown);
     padding: 10px;
 }
 
-.blur-up[b-4wscb0bba1] {
+.blur-up[b-rxa0qk1kjj] {
     filter: blur(10px);
     transition: filter 0.8s ease;
 }
 
-.blur-up.loaded[b-4wscb0bba1] {
+.blur-up.loaded[b-rxa0qk1kjj] {
     filter: blur(0);
 }
 /* /Components/ImagePreview.razor.rz.scp.css */
-.card[b-d0tcz82u9r] {
+.card[b-xf6jpb1jap] {
     margin: 5px;
     padding: 0;
     display: inline-block;
 }
 
-.image[b-d0tcz82u9r] {
+.image[b-xf6jpb1jap] {
     display: block;
 }
 
-.text[b-d0tcz82u9r] {
+.text[b-xf6jpb1jap] {
     font-size: 10px;
     width: calc(100% - 6px);
     padding: 3px;
     background: var(--color-brown);
 }
 
-.title[b-d0tcz82u9r] {
+.title[b-xf6jpb1jap] {
     font-weight: bold;
 }
 
-.placeholder[b-d0tcz82u9r] {
+.placeholder[b-xf6jpb1jap] {
     background: url('placeholder.png') center center / cover no-repeat;
 }
 
-.blur-up[b-d0tcz82u9r] {
+.blur-up[b-xf6jpb1jap] {
     filter: blur(10px) contrast(75%) brightness(75%);
     transition: filter 0.8s ease;
 }
 
-.blur-up:hover.loaded[b-d0tcz82u9r] {
+.blur-up:hover.loaded[b-xf6jpb1jap] {
     filter: blur(0) contrast(110%) brightness(110%);
     cursor: pointer;
 }
 
-.blur-up.loaded[b-d0tcz82u9r] {
+.blur-up.loaded[b-xf6jpb1jap] {
     filter: blur(0) contrast(75%) brightness(75%)
 }
 /* /Components/Overlay.razor.rz.scp.css */
-.backdrop[b-be9gb1b51g] {
+.backdrop[b-t9i0euj9ih] {
     position: fixed;
     inset: 0;
     background: rgba(255, 255, 255, .7);
@@ -106,18 +106,18 @@
     align-items: center;
 }
 
-.content[b-be9gb1b51g] {
+.content[b-t9i0euj9ih] {
     position: relative;
     overflow-y: auto;
     padding: 1rem;
     border-radius: 8px;
 }
 
-.button-container[b-be9gb1b51g] {
+.button-container[b-t9i0euj9ih] {
     position: relative;
 }
 
-button[b-be9gb1b51g] {
+button[b-t9i0euj9ih] {
     position: absolute;
     right: 5px;
     top: 5px;
@@ -127,41 +127,41 @@ button[b-be9gb1b51g] {
     cursor: pointer;
 }
 /* /Components/Results.razor.rz.scp.css */
-.image-row[b-gkts9uvoyt] {
+.image-row[b-1jf9c6n2qu] {
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
 }
 
-.row-container[b-gkts9uvoyt] {
+.row-container[b-1jf9c6n2qu] {
     display: flex;
     justify-content: center;
 }
 
-.force-fetch[b-gkts9uvoyt] {
+.force-fetch[b-1jf9c6n2qu] {
     color: var(--color-blue);
     text-decoration: underline;
     cursor: pointer;
 }
 
-.endpage-note[b-gkts9uvoyt] {
+.endpage-note[b-1jf9c6n2qu] {
     justify-self: center;
     margin: 20px 20px 40px;
 }
 /* /Pages/Search.razor.rz.scp.css */
-.outer-container[b-cbhajmavyf] {
+.outer-container[b-t07mkwwgb1] {
     justify-content: center;
     align-items: center;
     display: flex;
     height: max-content;
 }
 
-.inner-container[b-cbhajmavyf] {
+.inner-container[b-t07mkwwgb1] {
     width: 50%;
     margin: 40px;
 }
 
-h1[b-cbhajmavyf] {
+h1[b-t07mkwwgb1] {
     font-family: Anton, sans-serif;
     text-transform: uppercase;
     font-size: 18px;
@@ -171,7 +171,7 @@ h1[b-cbhajmavyf] {
     outline: none;
 }
 
-input[b-cbhajmavyf] {
+input[b-t07mkwwgb1] {
     padding: 10px 15px;
     width: 100%;
 
