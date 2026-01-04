@@ -5,8 +5,11 @@ body {
     color: #333;
 }
 
-:root {
+body.overlay-open {
+    overflow: hidden;
+}
 
+:root {
     /* Colorpalette of the existing homepage */
     --color-brown: #f0e9e0; /* used as a background for the main text elements */
     --color-black: #333; /* used for the main text */
