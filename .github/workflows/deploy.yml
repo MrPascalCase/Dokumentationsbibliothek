@@ -22,24 +22,23 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Publish Blazor app
-        run: dotnet publish -c Release
+        run: dotnet publish -c Release -o publish
 
       - name: Set base href
         run: |
           sed -i 's|%BASE_HREF%|/Dokumentationsbibliothek/|g' \
-          bin/Release/*/publish/wwwroot/index.html
+          publish/wwwroot/index.html
 
       - name: Create 404.html for SPA routing
         run: |
-          cp bin/Release/*/publish/wwwroot/index.html \
-             bin/Release/*/publish/wwwroot/404.html
-
+          cp publish/wwwroot/index.html publish/wwwroot/404.html
+          
       - name: Disable Jekyll
-        run: touch bin/Release/*/publish/wwwroot/.nojekyll
+        run: touch publish/wwwroot/.nojekyll
 
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: bin/Release/*/publish/wwwroot
+          publish_dir: publish/wwwroot
           publish_branch: gh-pages
