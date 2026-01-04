@@ -1,8 +1,8 @@
 ## TODO
 
-- routing does not work initially on github pages:
+- ~~routing does not work initially on github pages:
   https://mrpascalcase.github.io/Dokumentationsbibliothek/search
--> 404
+-> 404~~
 - ~~resize does not work initially~~
 - ~~execute search immediately with 'enter'~~
 - ~~show image preview as overlay~~
