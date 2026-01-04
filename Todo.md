@@ -5,8 +5,8 @@
 -> 404
 - ~~resize does not work initially~~
 - ~~execute search immediately with 'enter'~~
-- show image preview as overlay
-- fix the placeholder in the image preview
+- ~~show image preview as overlay~~
+- ~~fix the placeholder in the image preview~~
 - search by author, ~~decade~~, year, subject
 - fix season/jahreszeit
 - image details should have links to search by author, year, decade, subject
@@ -22,3 +22,5 @@
 - add a magnifying glass icon to the search bar
 - ~~use a single strategy for javascript loading~~
 - check and resolve warnings that images are loaded twice
+- click outside image-preview should close the overlay
+- reaching /search?query=post does not show the number of images found statistics

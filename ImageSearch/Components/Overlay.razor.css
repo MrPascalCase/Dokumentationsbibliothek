@@ -10,7 +10,6 @@
 
 .content {
     position: relative;
-    width: 70%;
     overflow-y: auto;
     padding: 1rem;
     border-radius: 8px;
