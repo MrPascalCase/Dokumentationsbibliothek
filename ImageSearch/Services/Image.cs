@@ -64,6 +64,10 @@ public class Image
 
     public Image()
     {
+        Title = string.Empty;
+        Description = string.Empty;
+        Year = string.Empty;
+        ImageUrl = string.Empty;
     }
 
     public Image(string content)

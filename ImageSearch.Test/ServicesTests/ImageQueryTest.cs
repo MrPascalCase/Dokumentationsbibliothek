@@ -30,7 +30,7 @@ public class ImageQueryTest
         string input = "dec:1950 postauto winter";
 
         // Act
-        ImageQuery query = ImageQuery.ParseSearchText(input);
+        ImageQuery query = ImageQuery.ParseSearchText(input)!;
 
         // Assert
         Assert.IsNotNull(query);
@@ -46,7 +46,7 @@ public class ImageQueryTest
         string input = "?query=postauto,winter&dec=1950";
 
         // Act
-        ImageQuery query = ImageQuery.ParseUrlQuery(input);
+        ImageQuery query = ImageQuery.ParseUrlQuery(input)!;
 
         // Assert
         Assert.IsNotNull(query);
@@ -76,7 +76,7 @@ public class ImageQueryTest
 
         // Act
         string url = query.ToUrl();
-        ImageQuery parsed = ImageQuery.ParseUrlQuery(url);
+        ImageQuery parsed = ImageQuery.ParseUrlQuery(url)!;
 
         // Assert
         Assert.AreEqual(1, parsed.Description.Count);
