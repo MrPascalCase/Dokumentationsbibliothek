@@ -26,7 +26,7 @@ public class SearchSession : IReadOnlyList<string>
         _service = service;
         _logger = logger;
 
-        // logger?.LogInformation($"{nameof(SearchSession)} created.");
+        logger?.LogTrace($"{nameof(SearchSession)} created.");
     }
 
     public async Task SetQuery(ImageQuery? query, bool debounce = true)
@@ -70,11 +70,11 @@ public class SearchSession : IReadOnlyList<string>
             
             if (fetchGeneration != null && fetchGeneration <= _fetchGeneration)
             {
-                // _logger?.LogInformation($"Requesting to load results of generation {fetchGeneration}. The request is stale. We are at generation {_fetchGeneration}.");
+                _logger?.LogTrace($"Requesting to load results of generation {fetchGeneration}. The request is stale. We are at generation {_fetchGeneration}.");
                 return;
             }
 
-            // _logger?.LogInformation($"Requesting results {Count} to {Count + ApiPaging} for '{CurrentQuery}'.");
+            _logger?.LogTrace($"Requesting results {Count} to {Count + ApiPaging} for '{CurrentQuery}'.");
             ImageIdCollection ids = await _service.LoadIds(CurrentQuery, Count, ApiPaging);
             _images.AddRange(ids);
             _fetchGeneration++;

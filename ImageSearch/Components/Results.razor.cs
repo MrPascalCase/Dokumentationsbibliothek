@@ -77,18 +77,19 @@ public partial class Results : ComponentBase
     {
         if (width != _width)
         {
-            // Logger.LogInformation($"Width changed to form {_width} to {width}.");
+            Logger.LogTrace($"Width changed to form {_width} to {width}.");
             _width = width;
 
             int imageMargin = 5; // see ImagePreview.razor.css
             int imagesPerRow = ImageAspectRatio.SuggestNumberOfImages(ImagePreview.Height, 2 * imageMargin, width);
             if (imagesPerRow != _imagesPerRow)
             {
-                // Logger.LogInformation($"Number of images per row changes from {_imagesPerRow} to {imagesPerRow}.");
+                Logger.LogTrace($"Number of images per row changes from {_imagesPerRow} to {imagesPerRow}.");
                 _imagesPerRow = imagesPerRow;
                 await InvokeAsync(StateHasChanged);
             }
-            // Logger.LogInformation($"Number of images per row ({_imagesPerRow}) does not change.");
+
+            Logger.LogTrace($"Number of images per row ({_imagesPerRow}) does not change.");
         }
     }
 

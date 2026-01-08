@@ -28,7 +28,7 @@ public class SearchService
         if (query == null) throw new ArgumentNullException(nameof(query));
 
         QueryProcessor processor = new();
-        // _logger?.LogInformation($"Loading Count for query='{query}'...");
+        _logger?.LogTrace($"Loading Count for query='{query}'...");
 
         string sparqlQuery = processor.BuildQuery(query);
         string content = await RunQuery(sparqlQuery, CountEndpoint);
@@ -39,7 +39,7 @@ public class SearchService
         }
         else
         {
-            // _logger?.LogInformation($"Received the count {count} for query='{query}'.");
+            _logger?.LogTrace($"Received the count {count} for query='{query}'.");
         }
 
         return count;
@@ -58,7 +58,7 @@ public class SearchService
         if (start < 0) throw new ArgumentOutOfRangeException(nameof(start));
         if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
 
-        // _logger?.LogInformation($"Loading Ids {start} to {start + count} for query='{query}'");
+        _logger?.LogTrace($"Loading Ids {start} to {start + count} for query='{query}'");
 
         int startPage = start / ApiPageSize; // Start page number of the API
         int additionalElementsStart = start - ApiPageSize * startPage; // number elements that are loaded additionally at the "front" due to paging
@@ -95,7 +95,7 @@ public class SearchService
             .Take(count)
             .ToArray();
 
-        // _logger?.LogInformation($"Using {relevantIds.Length} Ids of {ids.Length} Ids received from {tasks.Length} page(s).");
+        _logger?.LogTrace($"Using {relevantIds.Length} Ids of {ids.Length} Ids received from {tasks.Length} page(s).");
         return new ImageIdCollection(relevantIds, tasks.Length);
     }
 
