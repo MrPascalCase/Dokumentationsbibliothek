@@ -1,4 +1,3 @@
-using ImageSearch.Components;
 using ImageSearch.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -10,45 +9,26 @@ public partial class Search : ComponentBase
     [Inject]
     public required NavigationManager NavigationManager { get; set; }
 
-    private Results? _results;
-    private SearchInitializedArgument? _search;
-    private ImageQuery? _query;
+    [Inject]
+    public required SearchSession SearchSession { get; set; }
+
     private string _inputText = string.Empty;
     private string? _overlayImageId;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        base.OnParametersSet();
-
         Uri uri = new(NavigationManager.Uri);
         ImageQuery? query = ImageQuery.ParseUrlQuery(uri.Query);
-
         _inputText = query?.ToCanonicalSearchText() ?? string.Empty;
-        _query = query;
+        await SearchSession.SetQuery(query);
     }
 
     private async Task QueueSearch(bool forced)
     {
         string baseUri = NavigationManager.BaseUri;
-        _query = ImageQuery.ParseSearchText(_inputText);
-        NavigationManager.NavigateTo(baseUri + "search" + (_query?.ToUrl() ?? string.Empty));
-
-        if (_results != null)
-        {
-            if (forced)
-            {
-                await _results.UpdateSearch(_query);
-            }
-            else
-            {
-                await _results.UpdateSearchEventually(_query);
-            }
-        }
-    }
-
-    private void OnSearchInitialized(SearchInitializedArgument arg)
-    {
-        _search = arg;
+        ImageQuery? query = ImageQuery.ParseSearchText(_inputText);
+        NavigationManager.NavigateTo(baseUri + "search" + (query?.ToUrl() ?? string.Empty));
+        await SearchSession.SetQuery(query, forced);
     }
 
     private async Task OnImageSelected(string imageId)

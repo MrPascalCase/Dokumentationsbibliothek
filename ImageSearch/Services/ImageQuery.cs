@@ -4,7 +4,7 @@ using System.Text.Encodings.Web;
 namespace ImageSearch.Services;
 
 [Serializable]
-public class ImageQuery
+public class ImageQuery : IEquatable<ImageQuery>
 {
     public IReadOnlyList<string> Description { get; init; } = Array.Empty<string>();
     public int? ImageNr { get; init; }
@@ -187,5 +187,50 @@ public class ImageQuery
 
         imageNr = 0;
         return false;
+    }
+
+    public bool Equals(ImageQuery? other)
+    {
+        if (other is null) return false;
+        if (ReferenceEquals(this, other)) return true;
+
+        return ImageNr == other.ImageNr
+               && Decade == other.Decade
+               && Description
+                   .OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase)
+                   .SequenceEqual(other.Description.OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase));
+    }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is null) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((ImageQuery)obj);
+    }
+
+    public override int GetHashCode()
+    {
+        HashCode hash = new();
+
+        hash.Add(ImageNr);
+        hash.Add(Decade);
+
+        foreach (string description in Description.OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase))
+        {
+            hash.Add(description, StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        return hash.ToHashCode();
+    }
+
+    public static bool operator ==(ImageQuery? left, ImageQuery? right)
+    {
+        return Equals(left, right);
+    }
+
+    public static bool operator !=(ImageQuery? left, ImageQuery? right)
+    {
+        return !Equals(left, right);
     }
 }

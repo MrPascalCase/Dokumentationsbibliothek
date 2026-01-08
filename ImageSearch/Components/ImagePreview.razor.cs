@@ -13,13 +13,13 @@ public partial class ImagePreview : ComponentBase
     public required NavigationManager NavigationManager { get; set; }
 
     [Inject]
+    public required SearchSession SearchSession { get; set; }
+    
+    [Inject]
     public required SearchService SearchService { get; set; }
-
+    
     [Parameter]
     public required string ImageId { get; set; }
-
-    [Parameter]
-    public ImageQuery? Query { get; set; }
 
     [Parameter]
     public EventCallback<string> OnImageSelected { get; set; }

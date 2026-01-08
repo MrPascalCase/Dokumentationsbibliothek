@@ -22,12 +22,12 @@
                    @bind:after="@(() => QueueSearch(false))"
                    @onchange="@(() => QueueSearch(true))"/>
 
-            @if (_search?.Query != null && (_search?.ResultCount ?? 0) > 0)
+            @if (SearchSession.CurrentQuery != null && SearchSession.TotalImageCount != null)
             {
-                <p>Für die Suche nach @_search!.Query.ToDescription() wurden @_search.ResultCount Bilder gefunden.</p>
+                <p>Für die Suche nach @SearchSession.CurrentQuery.ToDescription() wurden @SearchSession.TotalImageCount Bilder gefunden.</p>
             }
         </div>
     </div>
 
-    <Results @ref="_results" InitialQuery="_query" OnSearchInitialized="OnSearchInitialized" OnImageSelected="@OnImageSelected"/>
+    <Results OnImageSelected="@OnImageSelected"/>
 </div>

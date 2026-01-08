@@ -174,7 +174,7 @@ public class JustificationBuilder
     {
         // Only matches with overlapping or directly adjacent context ranges
         // can be combined into a single justification block.
-        
+
         if (!left.ContextRange.DoesOverlapOrTouch(right.ContextRange))
         {
             result = null;
@@ -219,7 +219,7 @@ public class JustificationBuilder
         // - one <div> per match group
         // - <span> elements around matched text
         // - optional leading/trailing ellipses
-        
+
         sb.Append("<div>");
         if ((match.Elipses & Elipses.Start) != 0) sb.Append("...");
         sb.Append(text.Substring(match.ContextRange.Start, match.MatchRanges[0].Start - match.ContextRange.Start));

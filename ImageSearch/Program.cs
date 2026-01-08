@@ -17,6 +17,7 @@ public static class Program
 
         builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress), });
         builder.Services.AddScoped<SearchService>();
+        builder.Services.AddScoped<SearchSession>();
 
         await builder.Build().RunAsync();
     }

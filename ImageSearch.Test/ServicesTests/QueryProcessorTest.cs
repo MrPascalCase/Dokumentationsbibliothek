@@ -12,7 +12,7 @@ public class QueryProcessorTest
         // Arrange
         SearchService service = new(new HttpClient(), null);
         QueryProcessor processor = new();
-        ImageQuery query = new() {Decade = 1950, Description = new[] { "schnee", "post", }};
+        ImageQuery query = new() { Decade = 1950, Description = new[] { "schnee", "post", }, };
 
         // Act
         string sparqlQuery = processor.BuildQuery(query);

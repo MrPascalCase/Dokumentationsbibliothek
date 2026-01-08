@@ -6,7 +6,7 @@ namespace ImageSearch.Services.QueryProcessing;
 public class QueryProcessor
 {
     private int _nextFilterNumber;
-    
+
     public string BuildQuery(ImageQuery query)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
@@ -36,7 +36,7 @@ public class QueryProcessor
         writer.Flush();
         return sb.ToString();
     }
-    
+
     internal int ReserveFilterNumber()
     {
         return _nextFilterNumber++;

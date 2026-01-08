@@ -1,34 +1,29 @@
-﻿@if (_results.Count > 0)
+﻿@if (SearchSession.Count > 0)
 {
-    @for (int row = 0; row * _imagesPerRow < _results.Count; row++)
+    @for (int row = 0; row * _imagesPerRow < SearchSession.Count; row++)
     {
         <div class="row-container">
             <div class="image-row">
                 @for (int col = 0; col < _imagesPerRow; col++)
                 {
                     int index = _imagesPerRow * row + col;
-                    if (index < _results.Count)
+                    if (index < SearchSession.Count)
                     {
-                        <ImagePreview @key="_results[index]" ImageId="@_results[index]" Query="@_query" OnImageSelected="@OnImageSelected"/>
+                        <ImagePreview @key="SearchSession[index]" ImageId="@SearchSession[index]" OnImageSelected="@OnImageSelected"/>
                     }
                 }
             </div>
         </div>
     }
 
-    @if (_resultCount != 0 && _results.Count == _resultCount)
+    @if (SearchSession.TotalImageCount == SearchSession.Count)
     {
         <div class="endpage-note">Alle gefundenen Bilder wurden angezeigt.</div>
     }
 
     <div @ref="_endMarker" class="endpage-note">
-        @if (_results.Count < _resultCount)
+        @if (SearchSession.Count < SearchSession.TotalImageCount)
         {
-            @if (_isFetching)
-            {
-                <div>Weitere Bilder werden geladen...</div>
-            }
-
             <div class="force-fetch" @onclick="FetchMore">
                 [Bilder laden]
             </div>

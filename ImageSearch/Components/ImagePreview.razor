@@ -7,10 +7,10 @@
     <div style="@($"width: {_width}px;")">
         <div class="text">
             <div class="title">@Title</div>
-            @if (_result != null && Query != null)
+            @if (_result != null && SearchSession.CurrentQuery != null)
             {
                 <div>
-                    @_builder.Justify(Query, _result)
+                    @_builder.Justify(SearchSession.CurrentQuery, _result)
                 </div>
             }
             <div>@Jahr</div>

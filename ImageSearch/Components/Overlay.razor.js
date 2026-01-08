@@ -5,8 +5,9 @@ export function init(dotNetRef, callbackMethodName) {
     keyHandler = function (e) {
         if (e.key === "Escape") {
             dotNetRef.invokeMethodAsync(callbackMethodName)
-                .catch(() => { /* ignore if disposed */ });
-            
+                .catch(() => { /* ignore if disposed */
+                });
+
             dispose();
         }
     };

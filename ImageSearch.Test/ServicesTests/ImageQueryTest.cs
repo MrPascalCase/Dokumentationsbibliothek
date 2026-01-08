@@ -83,4 +83,38 @@ public class ImageQueryTest
         Assert.AreEqual("postauto/winter", parsed.Description[0]);
         Assert.IsFalse(url.Contains("/"));
     }
+
+    [TestMethod]
+    public void TestEquals_true()
+    {
+        // Arrange
+        ImageQuery q1 = new() { Decade = 1950, Description = new[] { "test1", "test2", }, };
+        ImageQuery q2 = new() { Decade = 1950, Description = new[] { "test1", "test2", }, };
+
+        // Act
+        bool result = q1.Equals(q2);
+        int hash1 = q1.GetHashCode();
+        int hash2 = q2.GetHashCode();
+
+        // Assert
+        Assert.IsTrue(result);
+        Assert.AreEqual(hash1, hash2);
+    }
+
+    [TestMethod]
+    public void TestEquals_false()
+    {
+        // Arrange
+        ImageQuery q1 = new() { Decade = 1950, Description = new[] { "test1", "test2", "test3", }, };
+        ImageQuery q2 = new() { Decade = 1950, Description = new[] { "test1", "test2", }, };
+
+        // Act
+        bool result = q1.Equals(q2);
+        int hash1 = q1.GetHashCode();
+        int hash2 = q2.GetHashCode();
+
+        // Assert
+        Assert.IsFalse(result);
+        Assert.AreNotEqual(hash1, hash2);
+    }
 }
