@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ImageSearch",
   "resources": {
-    "hash": "sha256-Su2tGJdInvNpwdrh8eVgHljyEyrg/iDvzpmM6EmGzkg=",
+    "hash": "sha256-MGzMP28MLGIPHF0Cyq3E3AXhqMhTfQxyoy4GyGpSQrw=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.q4nos595od.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.hensikmp0w.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -12,7 +12,7 @@
       "Microsoft.Extensions.DependencyInjection.uum8fsrbn4.wasm": "Microsoft.Extensions.DependencyInjection.wasm",
       "Microsoft.Extensions.DependencyInjection.Abstractions.aaipoo5j5h.wasm": "Microsoft.Extensions.DependencyInjection.Abstractions.wasm",
       "Microsoft.Extensions.Logging.fafzppkh1j.wasm": "Microsoft.Extensions.Logging.wasm",
-      "Microsoft.Extensions.Logging.Abstractions.r9ej7mnn0s.wasm": "Microsoft.Extensions.Logging.Abstractions.wasm",
+      "Microsoft.Extensions.Logging.Abstractions.feqeql4ybu.wasm": "Microsoft.Extensions.Logging.Abstractions.wasm",
       "Microsoft.Extensions.Options.sv9qmqvsmm.wasm": "Microsoft.Extensions.Options.wasm",
       "Microsoft.Extensions.Primitives.5pxr7nzxwe.wasm": "Microsoft.Extensions.Primitives.wasm",
       "Microsoft.JSInterop.mfcj9yecwz.wasm": "Microsoft.JSInterop.wasm",
@@ -57,7 +57,7 @@
       "System.t4d4s3f398.wasm": "System.wasm",
       "netstandard.n1a597dekw.wasm": "netstandard.wasm",
       "System.Private.CoreLib.pb2e59qol3.wasm": "System.Private.CoreLib.wasm",
-      "ImageSearch.h9rcpscyyt.wasm": "ImageSearch.wasm",
+      "ImageSearch.m3jzp7w7dz.wasm": "ImageSearch.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.noby4tlk4d.js": "dotnet.native.js",
       "dotnet.native.qe75a9vfqn.wasm": "dotnet.native.wasm",
@@ -94,7 +94,7 @@
       "Microsoft.Extensions.DependencyInjection.uum8fsrbn4.wasm": "sha256-Sgs1bgmGaF2mv6rWcaihc+x48ZQQAidfzYwZvYX5WJk=",
       "Microsoft.Extensions.DependencyInjection.Abstractions.aaipoo5j5h.wasm": "sha256-0rDL6vmvvZ1eVkS0gvVu5CfkYszWU6BUAU4mnf0PKJo=",
       "Microsoft.Extensions.Logging.fafzppkh1j.wasm": "sha256-2Yqf8p2uqjaF7c08V8XVW8pGZs/JqVtJEYUaaxcN/mE=",
-      "Microsoft.Extensions.Logging.Abstractions.r9ej7mnn0s.wasm": "sha256-AYKCT6VNNbDYc+sgMHhlIFF+VxTrjybVzUrchjAaNfY=",
+      "Microsoft.Extensions.Logging.Abstractions.feqeql4ybu.wasm": "sha256-JwtoThdmfONyrY01hdLelOWUey7zR4bTw8SoiJKco7Q=",
       "Microsoft.Extensions.Options.sv9qmqvsmm.wasm": "sha256-iCJ7MgEDmi8gJJ4kr+vCM0UW+W51Th0XAwRG1vPU9Ak=",
       "Microsoft.Extensions.Primitives.5pxr7nzxwe.wasm": "sha256-WXYpl64HUqc9+prJOz6dOEVvB8PFJhTdfqUMB3ZGRGA=",
       "Microsoft.JSInterop.mfcj9yecwz.wasm": "sha256-TukHUp7MOQ7W2jlDddbz4sB9BrKmOGaeAwYPI5BvWpM=",
@@ -137,7 +137,7 @@
       "System.Xml.Linq.62mgoxb9g2.wasm": "sha256-UgDQgumqZj6p9gp1AxxwuF7FY0ittV25c4qrMW9q7XY=",
       "System.t4d4s3f398.wasm": "sha256-fVP2BxRRKpBA0PmBbKxmO45bXDrAXVn1GthlDclLbeU=",
       "netstandard.n1a597dekw.wasm": "sha256-Gzck1SEeRh969NIGuMehiXdXB5yvUwh7E5vSLTM2g/4=",
-      "ImageSearch.h9rcpscyyt.wasm": "sha256-Bf7S8pBbYr1TOyXqeZwUIteoNNZuJ2Y+fZdpDtrXPgw="
+      "ImageSearch.m3jzp7w7dz.wasm": "sha256-jr/serHWjRm0vG7cU+T7icebhmrZFlQ1wdJLg6buEcM="
     }
   },
   "cacheBootResources": true,
