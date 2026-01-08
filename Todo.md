@@ -9,7 +9,7 @@
 - ~~fix the placeholder in the image preview~~
 - search by author, ~~decade~~, year, subject
 - fix season/jahreszeit
-- image details should have links to search by author, year, decade, subject
+- image details should have links to search by author, year, ~~decade~~, subject
 - ~~API support for multiple search terms~~
 - ~~UI support for multiple search terms~~
 - layout optimization for mobile
@@ -21,6 +21,6 @@
    + add more tests for justification logic.
 - add a magnifying glass icon to the search bar
 - ~~use a single strategy for javascript loading~~
-- check and resolve warnings that images are loaded twice
+- ~~check and resolve warnings that images are loaded twice~~
 - click outside image-preview should close the overlay
-- reaching /search?query=post does not show the number of images found statistics
+- ~~reaching /search?query=post does not show the number of images found statistics~~

@@ -1,16 +1,19 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 
 namespace ImageSearch.Services;
 
 public class SearchSession : IReadOnlyList<string>
 {
-    public int SearchDelayMs { get; init; } = 300;
+    public int SearchDelayMs { get; init; } = 1000;
     public int ApiPaging { get; init; } = 25;
     public ImageQuery? CurrentQuery { get; private set; }
     public int? TotalImageCount { get; private set; }
+    public TimeSpan? TimeToSearchCount { get; private set; }
     public int Count => _images.Count;
     public string this[int index] => _images[index];
     public event Action<SearchResultsAddedArgs>? OnResultsAdded;
+    public event Action? OnQueryChanged;
 
     private readonly List<string> _images = new();
     private readonly SearchService _service;
@@ -35,23 +38,34 @@ public class SearchSession : IReadOnlyList<string>
 
         CurrentQuery = null;
         TotalImageCount = null;
+        TimeToSearchCount = null;
         _fetchGeneration = 0;
         _images.Clear();
 
-        if (query == null) return;
+        if (query == null)
+        {
+            if (OnQueryChanged?.GetInvocationList().Any() ?? false) OnQueryChanged.Invoke();
+            return;
+        }
 
-        bool searchRequired = true;
+
         if (debounce)
         {
-            searchRequired = searchRequired && await Debounce();
+            bool searchRequired = await Debounce();
+            if (!searchRequired) return;
         }
 
-        if (searchRequired)
-        {
-            CurrentQuery = query;
-            TotalImageCount = await _service.Count(query);
-            await FetchData(1);
-        }
+        CurrentQuery = query;
+        if (OnQueryChanged?.GetInvocationList().Any() ?? false) OnQueryChanged.Invoke();
+
+        Stopwatch sw = Stopwatch.StartNew();
+        TotalImageCount = await _service.Count(query);
+        sw.Stop();
+        TimeToSearchCount = sw.Elapsed;
+
+        if (OnQueryChanged?.GetInvocationList().Any() ?? false) OnQueryChanged.Invoke();
+
+        await FetchData(1);
     }
 
     /// <param name="fetchGeneration">
@@ -62,15 +76,25 @@ public class SearchSession : IReadOnlyList<string>
     {
         if (CurrentQuery == null) return;
         if (_images.Count == TotalImageCount) return;
-        if (_images.Count > TotalImageCount) throw new Exception("Too many images");
+
+        if (_images.Count > TotalImageCount)
+        {
+            _logger?.LogWarning($"Count of the result-list ({_images.Count}) is larger than the total count provided by the API ({TotalImageCount}).");
+        }
+
+        bool didAcquireLock = await _semaphore.WaitAsync(500);
+        if (!didAcquireLock)
+        {
+            _logger?.LogWarning("Failed to acquire lock during the allocated time.");
+            return;
+        }
 
         try
         {
-            await _semaphore.WaitAsync();
-            
             if (fetchGeneration != null && fetchGeneration <= _fetchGeneration)
             {
-                _logger?.LogTrace($"Requesting to load results of generation {fetchGeneration}. The request is stale. We are at generation {_fetchGeneration}.");
+                _logger?.LogTrace(
+                    $"Requesting to load results of generation {fetchGeneration}. The request is stale. We are at generation {_fetchGeneration}.");
                 return;
             }
 
@@ -114,13 +138,19 @@ public class SearchSession : IReadOnlyList<string>
         try
         {
             await Task.Delay(SearchDelayMs, _debounceCts.Token);
-            if (_debounceCts.IsCancellationRequested) return false;
+            if (_debounceCts.IsCancellationRequested)
+            {
+                _logger?.LogInformation("Search is cancelled.");
+                return false;
+            }
         }
         catch (TaskCanceledException)
         {
+            _logger?.LogInformation("Search is cancelled.");
             return false;
         }
 
+        _logger?.LogInformation("Search must be done.");
         return true;
     }
 }

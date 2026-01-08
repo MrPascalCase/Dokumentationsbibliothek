@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using System.Text.Encodings.Web;
 using ImageSearch.Services.QueryProcessing;
 using Newtonsoft.Json;
@@ -132,7 +133,10 @@ public class SearchService
         request.Content = new StringContent(query, Encoding.UTF8, "application/sparql-query");
         request.Headers.Accept.ParseAdd("application/ld+json");
 
+        Stopwatch sw = Stopwatch.StartNew();
         HttpResponseMessage response = await _httpClient.SendAsync(request);
+        _logger?.LogInformation($"Response form {endpoint} arrived in {sw.ElapsedMilliseconds} ms.");
+
         response.EnsureSuccessStatusCode();
 
         string content = await response.Content.ReadAsStringAsync();

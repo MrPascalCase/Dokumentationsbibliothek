@@ -22,9 +22,24 @@
                    @bind:after="@(() => QueueSearch(false))"
                    @onchange="@(() => QueueSearch(true))"/>
 
-            @if (SearchSession.CurrentQuery != null && SearchSession.TotalImageCount != null)
+            @if (SearchSession.CurrentQuery != null)
             {
-                <p>Für die Suche nach @SearchSession.CurrentQuery.ToDescription() wurden @SearchSession.TotalImageCount Bilder gefunden.</p>
+                if (SearchSession.TotalImageCount != null)
+                {
+                    <p>
+                        Für die Suche nach @SearchSession.CurrentQuery.ToDescription() wurden @SearchSession.TotalImageCount Bilder gefunden
+                        @if (SearchSession.TimeToSearchCount != null)
+                        {
+                            @($"({Math.Round(SearchSession.TimeToSearchCount.Value.TotalSeconds, 3)} sek)")
+                        }
+                        @(".")
+                    </p>
+                    
+                }
+                else
+                {
+                    <p>Es wird nach @SearchSession.CurrentQuery.ToDescription() gesucht...</p>
+                }
             }
         </div>
     </div>

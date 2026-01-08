@@ -130,4 +130,22 @@ public class SearchServiceTest
             Assert.IsTrue(image.Description.ToLowerInvariant().Contains("morteratsch"));
         }
     }
+
+    [TestMethod]
+    public async Task TestSearch_check_that_both_endpoints_return_consistent_counts()
+    {
+        // Arrange
+        SearchService service = new(new HttpClient(), null);
+        ImageQuery query = ImageQuery.ParseSearchText("dec:1930 postauto")!;
+
+        // Act
+        ImageIdCollection ids = await service.LoadIds(query, 0, 100);
+        int? count = await service.Count(query);
+
+        // Assert
+        Console.WriteLine("Count (Count API): " + count);
+        Console.WriteLine("Id count (Search API): " + ids.Count);
+
+        Assert.AreEqual(count, ids.Count);
+    }
 }

@@ -1,4 +1,4 @@
-<div class="backdrop" style=" postion: absolute;">
+<div class="backdrop">
     <div class="content">
         <div class="button-container">
             <button @onclick="CloseOverlay" title="Zurück zur Suche [Esc]" aria-label="Zurück zur Suche [Esc]">
@@ -8,7 +8,9 @@
                 </svg>
             </button>
         </div>
-
-        @ChildContent
+        
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
     </div>
 </div>
