@@ -1,15 +1,17 @@
 ﻿using ImageSearch.Services;
 
-namespace ImageSearch.Test.ServicesTests;
+namespace ImageSearch.Test.Services;
 
 [TestClass]
 public class SearchServiceTest
 {
+    #region Tests for the method 'LoadIds'
+
     [TestMethod]
     public async Task TestLoadIds_by_imageNr()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), null);
 
         // Act
         ImageIdCollection ids = await searchService.LoadIds(new ImageQuery { ImageNr = 14826, }, 0, 25);
@@ -23,7 +25,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_fetch_ids_form_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), null);
 
         // Act
         ImageIdCollection ids = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 0, 40);
@@ -37,7 +39,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_load_2_ids_from_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), null);
         ImageIdCollection ids = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 0, 50);
 
         // Act
@@ -58,7 +60,7 @@ public class SearchServiceTest
     public async Task TestLoadIds_load_ids_from_3_pages_that_would_fit_on_2_pages()
     {
         // Arrange
-        SearchService searchService = new(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), null);
         ImageIdCollection ids0To100 = await searchService.LoadIds(ImageQuery.FromText("Schnee"), 0, 100);
 
         // Act
@@ -78,10 +80,10 @@ public class SearchServiceTest
     }
 
     [TestMethod]
-    public async Task TestSearch_5_images_for_postauto()
+    public async Task TestLoadIds_5_images_for_postauto()
     {
         // Arrange
-        SearchService search = new(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), null);
 
         // Act
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Postauto"), 0, 5);
@@ -96,10 +98,10 @@ public class SearchServiceTest
     }
 
     [TestMethod]
-    public async Task TestSearch_5_images_for_schnee()
+    public async Task TestLoadIds_5_images_for_schnee()
     {
         // Arrange
-        SearchService search = new(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), null);
 
         // Act
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("schnee"), 0, 5);
@@ -114,10 +116,10 @@ public class SearchServiceTest
     }
 
     [TestMethod]
-    public async Task TestSearch_5_images_for_Morteratsch()
+    public async Task TestLoadIds_5_images_for_Morteratsch()
     {
         // Arrange
-        SearchService search = new(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), null);
 
         // Act
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Morteratsch"), 0, 5);
@@ -131,11 +133,14 @@ public class SearchServiceTest
         }
     }
 
+    #endregion
+
+
     [TestMethod]
     public async Task TestSearch_check_that_both_endpoints_return_consistent_counts()
     {
         // Arrange
-        SearchService service = new(new HttpClient(), null);
+        ISearchService service = new SearchService(new HttpClient(), null);
         ImageQuery query = ImageQuery.ParseSearchText("dec:1930 postauto")!;
 
         // Act

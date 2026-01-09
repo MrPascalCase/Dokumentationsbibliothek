@@ -16,13 +16,13 @@ public class SearchSession : IReadOnlyList<string>
     public event Action? OnQueryChanged;
 
     private readonly List<string> _images = new();
-    private readonly SearchService _service;
+    private readonly ISearchService _service;
     private readonly ILogger<SearchSession>? _logger;
     private CancellationTokenSource? _debounceCts;
     private int _fetchGeneration;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public SearchSession(SearchService service, ILogger<SearchSession>? logger = null)
+    public SearchSession(ISearchService service, ILogger<SearchSession>? logger = null)
     {
         if (service == null) throw new ArgumentNullException(nameof(service));
 

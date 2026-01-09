@@ -12,7 +12,7 @@ public partial class ImageDetail : ComponentBase
     public Overlay? ParentOverlay { get; set; }
 
     [Inject]
-    public required SearchService SearchService { get; set; }
+    public required ISearchService SearchService { get; set; }
 
     [Inject]
     public required NavigationManager NavigationManager { get; set; }

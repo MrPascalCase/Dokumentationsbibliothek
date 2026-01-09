@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ImageSearch.Services;
 
-public class SearchService
+public class SearchService : ISearchService
 {
     private readonly ILogger<SearchService>? _logger;
     private readonly HttpClient _httpClient;
@@ -44,13 +44,6 @@ public class SearchService
         }
 
         return count;
-    }
-
-    public async Task<ImageIdCollection> LoadIds(ImageQuery query, int start, int count)
-    {
-        QueryProcessor processor = new();
-        string sparqlQuery = processor.BuildQuery(query);
-        return await LoadIds(sparqlQuery, start, count);
     }
 
     public async Task<ImageIdCollection> LoadIds(string query, int start, int count)
@@ -113,15 +106,6 @@ public class SearchService
 
         _logger?.LogWarning($"Image with Id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{details}");
         return null;
-    }
-
-    public async Task<Image[]> LoadImages(IEnumerable<string> imageIds)
-    {
-        if (imageIds == null) throw new ArgumentNullException(nameof(imageIds));
-
-        Task<Image?>[] tasks = imageIds.Select(LoadImage).ToArray();
-        Image?[] images = await Task.WhenAll(tasks);
-        return images.Where(img => img != null).Select(img => img!).ToArray();
     }
 
     private async Task<string> RunQuery(string query, string endpoint)

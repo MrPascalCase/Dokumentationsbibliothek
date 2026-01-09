@@ -1,7 +1,7 @@
 using System.Text.Json;
 using ImageSearch.Services;
 
-namespace ImageSearch.Test.ServicesTests;
+namespace ImageSearch.Test.Services;
 
 [TestClass]
 public class ImageQueryTest

@@ -1,16 +1,16 @@
 using ImageSearch.Services;
 using ImageSearch.Services.QueryProcessing;
 
-namespace ImageSearch.Test.ServicesTests;
+namespace ImageSearch.Test.Services.QueryProcessing;
 
 [TestClass]
 public class QueryProcessorTest
 {
     [TestMethod]
-    public async Task TestBuildQuery_search_for_schee_and_post_in_the_1950s()
+    public async Task TestBuildQuery_search_for_schnee_and_post_in_the_1950s()
     {
         // Arrange
-        SearchService service = new(new HttpClient(), null);
+        ISearchService service = new SearchService(new HttpClient(), null);
         QueryProcessor processor = new();
         ImageQuery query = new() { Decade = 1950, Description = new[] { "schnee", "post", }, };
 

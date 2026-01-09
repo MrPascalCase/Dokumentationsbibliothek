@@ -1,10 +1,12 @@
 using ImageSearch.Services;
 
-namespace ImageSearch.Test.ServicesTests;
+namespace ImageSearch.Test.Services;
 
 [TestClass]
 public class ImageAspectRatioTest
 {
+    #region Tests for the method 'SuggestNumberOfImages'
+
     [TestMethod]
     public void TestSuggestNumberOfImages_one_image_would_not_fit_but_there_needs_to_be_one_image()
     {
@@ -24,4 +26,5 @@ public class ImageAspectRatioTest
         // Assert
         Assert.AreEqual(3, result);
     }
+    #endregion
 }

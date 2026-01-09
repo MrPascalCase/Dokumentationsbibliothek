@@ -16,7 +16,7 @@ public partial class ImagePreview : ComponentBase
     public required SearchSession SearchSession { get; set; }
     
     [Inject]
-    public required SearchService SearchService { get; set; }
+    public required ISearchService SearchService { get; set; }
     
     [Parameter]
     public required string ImageId { get; set; }

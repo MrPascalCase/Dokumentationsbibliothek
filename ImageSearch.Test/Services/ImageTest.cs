@@ -1,6 +1,6 @@
 ﻿using ImageSearch.Services;
 
-namespace ImageSearch.Test.ServicesTests;
+namespace ImageSearch.Test.Services;
 
 [TestClass]
 public class ImageTest
