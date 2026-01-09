@@ -3,10 +3,12 @@
 namespace ImageSearch.Test.Services;
 
 [TestClass]
-public class ImageTest
+public class ImageBuilderTest
 {
+    #region Test for the method 'BuildImage'
+
     [TestMethod]
-    public void TestConstructor()
+    public async Task TestBuildImage()
     {
         // Arrange
         HttpClient client = new();
@@ -17,8 +19,10 @@ public class ImageTest
         response.EnsureSuccessStatusCode();
         string content = response.Content.ReadAsStringAsync().Result;
 
+        ImageBuilder builder = new(null);
+
         // Act
-        Image result = new(content);
+        Image result = await builder.BuildImage(content);
 
         // Assert
         Console.WriteLine(result);
@@ -30,14 +34,19 @@ public class ImageTest
         Assert.AreEqual("WIRTSCHAFT-VERKEHR-Schneeräumungs- und Pistenfahrzeuge (013661)", result.Title);
     }
 
+    #endregion
+
+    #region Test for the method 'ProcessTitle'
+
     [TestMethod]
     public void TestProcessTitle()
     {
         // Arrange
         string input = "SOMETHING-SOME OTHER THING-Actual Title (000012)";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 12, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 12, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
@@ -50,9 +59,10 @@ public class ImageTest
     {
         // Arrange
         string input = " SOMETHING -SOME OTHER THING-AND ANOTHER THING - Actual Title (000012)  ";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 12, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 12, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
@@ -65,9 +75,10 @@ public class ImageTest
     {
         // Arrange
         string input = " Just a Title that--contains a minus (000012)  ";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 12, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 12, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
@@ -80,9 +91,10 @@ public class ImageTest
     {
         // Arrange
         string input = " Just a Title (012)   ";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 13, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 13, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
@@ -95,9 +107,10 @@ public class ImageTest
     {
         // Arrange
         string input = "SOMETHING-SOME OTHER THING-Actual Title (00000000012)";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 12, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 12, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
@@ -110,13 +123,16 @@ public class ImageTest
     {
         // Arrange
         string input = "SOMETHING-SOME OTHER THING-Actual Title (12)";
+        ImageBuilder builder = new(null);
 
         // Act
-        bool result = Image.ProcessTitle(input, 12, out string[] subject, out string caption);
+        bool result = builder.ProcessTitle(input, 12, out string[] subject, out string caption);
 
         // Assert
         Assert.IsTrue(result);
         CollectionAssert.AreEquivalent(new[] { "Something", "Some Other Thing", }, subject);
         Assert.AreEqual("Actual Title", caption);
     }
+
+    #endregion
 }

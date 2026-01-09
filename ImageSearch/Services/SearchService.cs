@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using ImageSearch.Services.QueryProcessing;
@@ -7,21 +8,27 @@ using Newtonsoft.Json.Linq;
 
 namespace ImageSearch.Services;
 
-public class SearchService : ISearchService
+public class SearchService : ISearchService, IImageDetailResolver
 {
-    private readonly ILogger<SearchService>? _logger;
-    private readonly HttpClient _httpClient;
-
     // The API uses pages of size 25
     private const int ApiPageSize = 25;
 
     private const string SearchEndpoint = "https://api.dasch.swiss/v2/searchextended";
     private const string CountEndpoint = "https://api.dasch.swiss/v2/searchextended/count";
+    private const string ResourcesEndpoint = "https://api.dasch.swiss/v2/resources";
+    private const string NodeEndpoint = "https://api.dasch.swiss/v2/node";
+
+    private readonly ILogger<SearchService>? _logger;
+    private readonly HttpClient _httpClient;
+    private readonly ConcurrentDictionary<string, string> _nodeLabelCache;
+    private readonly ImageBuilder _imageBuilder;
 
     public SearchService(HttpClient httpClient, ILogger<SearchService>? logger)
     {
         _logger = logger;
         _httpClient = httpClient;
+        _nodeLabelCache = new ConcurrentDictionary<string, string>();
+        _imageBuilder = new ImageBuilder(this);
     }
 
     public async Task<int?> Count(ImageQuery query)
@@ -98,14 +105,33 @@ public class SearchService : ISearchService
         if (string.IsNullOrWhiteSpace(imageId)) throw new ArgumentNullException(nameof(imageId));
 
         string details = await QueryImageDetails(imageId);
-        if (Image.IsValidImage(details, out string? error))
+        if (_imageBuilder.IsValidImage(details, out string? error))
         {
-            Image img = new(details);
+            Image img = await _imageBuilder.BuildImage(details);
             return img;
         }
 
         _logger?.LogWarning($"Image with Id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{details}");
         return null;
+    }
+
+    public async Task<string> ResolveNodeLabel(string nodeId)
+    {
+        if (string.IsNullOrWhiteSpace(nodeId)) throw new ArgumentNullException(nameof(nodeId));
+
+        if (_nodeLabelCache.TryGetValue(nodeId, out string? cached)) return cached;
+
+        string encoded = UrlEncoder.Default.Encode(nodeId);
+        using HttpRequestMessage request = new(HttpMethod.Get, $"{NodeEndpoint}/{encoded}");
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+
+        string json = await response.Content.ReadAsStringAsync();
+        JObject node = JsonConvert.DeserializeObject<JObject>(json)!;
+        string label = node["rdfs:label"]?.Value<string>() ?? "<nicht definiert>";
+        _nodeLabelCache[nodeId] = label;
+
+        return label;
     }
 
     private async Task<string> RunQuery(string query, string endpoint)
@@ -181,16 +207,21 @@ public class SearchService : ISearchService
     {
         if (string.IsNullOrWhiteSpace(id)) throw new ArgumentNullException(nameof(id));
 
-        HttpClient client = new();
-        string encode = UrlEncoder.Default.Encode(id);
-        using HttpRequestMessage request = new(HttpMethod.Get, $"https://api.dasch.swiss/v2/resources/{encode}");
+        string encoded = UrlEncoder.Default.Encode(id);
+        using HttpRequestMessage request = new(HttpMethod.Get, $"{ResourcesEndpoint}/{encoded}");
 
-        HttpResponseMessage response = await client.SendAsync(request);
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException($"Failed to load the image with id='{id}'. StatusCode: {response.StatusCode}. Reason: {response.ReasonPhrase}.");
         }
 
         return await response.Content.ReadAsStringAsync();
+    }
+
+
+    async Task<string> IImageDetailResolver.ResolveSeasonNodeLabel(string nodeId)
+    {
+        return await ResolveNodeLabel(nodeId);
     }
 }

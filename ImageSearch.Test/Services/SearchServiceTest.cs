@@ -3,7 +3,7 @@
 namespace ImageSearch.Test.Services;
 
 [TestClass]
-public class SearchServiceTest
+public class SearchServiceTest : TestBase
 {
     #region Tests for the method 'LoadIds'
 
@@ -115,14 +115,18 @@ public class SearchServiceTest
         }
     }
 
+    #endregion
+
+    #region Test for the method 'LoadImages'
+
     [TestMethod]
-    public async Task TestLoadIds_5_images_for_Morteratsch()
+    public async Task TestLoadImages_5_images_for_Morteratsch()
     {
         // Arrange
         ISearchService search = new SearchService(new HttpClient(), null);
+        ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Morteratsch"), 0, 5);
 
         // Act
-        ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Morteratsch"), 0, 5);
         Image[] images = await search.LoadImages(ids);
 
         // Assert
@@ -135,6 +139,24 @@ public class SearchServiceTest
 
     #endregion
 
+
+    #region Test for the method 'ResolveNodeLabel'
+
+    [TestMethod]
+    public async Task ResolveNodeLabel()
+    {
+        // Arrange
+        SearchService service = new(new HttpClient(), ArrangeConsoleLogger<SearchService>());
+
+        // Act
+        string result = await service.ResolveNodeLabel("http://rdfh.ch/lists/0804/h3umZrvkSD2AI1JV_G2NnQ");
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("Winter", result);
+    }
+
+    #endregion
 
     [TestMethod]
     public async Task TestSearch_check_that_both_endpoints_return_consistent_counts()

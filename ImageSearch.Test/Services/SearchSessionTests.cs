@@ -1,11 +1,10 @@
 ﻿using ImageSearch.Services;
-using Microsoft.Extensions.Logging;
 using NSubstitute;
 
 namespace ImageSearch.Test.Services;
 
 [TestClass]
-public class SearchSessionTests
+public class SearchSessionTests : TestBase
 {
     #region Tests for the method 'SetQuery'
 
@@ -22,7 +21,7 @@ public class SearchSessionTests
         mock.LoadIds(query, Arg.Any<int>(), Arg.Any<int>()).Returns(Task.FromResult(idCollection));
         mock.Count(Arg.Any<ImageQuery>()).Returns(Task.FromResult((int?)5));
 
-        SearchSession session = new(mock, ArrangeConsoleLogger());
+        SearchSession session = new(mock, ArrangeConsoleLogger<SearchSession>());
 
         // Act
         await session.SetQuery(query, false);
@@ -56,7 +55,7 @@ public class SearchSessionTests
         mock.LoadIds(query, Arg.Any<int>(), Arg.Any<int>()).Returns(Task.FromResult(idCollection));
         mock.Count(Arg.Any<ImageQuery>()).Returns(Task.FromResult((int?)50));
 
-        SearchSession session = new(mock, ArrangeConsoleLogger());
+        SearchSession session = new(mock, ArrangeConsoleLogger<SearchSession>());
         await session.SetQuery(query, false);
         int resultsAddedCalled = 0;
         session.OnResultsAdded += _ => { resultsAddedCalled++; };
@@ -67,7 +66,7 @@ public class SearchSessionTests
         // Assert
         Assert.AreEqual(1, resultsAddedCalled);
     }
-    
+
     [TestMethod]
     public async Task TestFetchData_queue_fetch_data_of_the_same_generation_in_parallel()
     {
@@ -81,7 +80,7 @@ public class SearchSessionTests
         mock.LoadIds(query, Arg.Any<int>(), Arg.Any<int>()).Returns(Task.FromResult(idCollection));
         mock.Count(Arg.Any<ImageQuery>()).Returns(Task.FromResult((int?)50));
 
-        SearchSession session = new(mock, ArrangeConsoleLogger());
+        SearchSession session = new(mock, ArrangeConsoleLogger<SearchSession>());
         await session.SetQuery(query, false);
         int resultsAddedCalled = 0;
         session.OnResultsAdded += _ => { resultsAddedCalled++; };
@@ -89,12 +88,9 @@ public class SearchSessionTests
         // Act
         Task[] tasks = Enumerable
             .Range(0, 5)
-            .Select(async _ =>
-            {
-                await session.FetchData(2);
-            })
+            .Select(async _ => { await session.FetchData(2); })
             .ToArray();
-        
+
         await Task.WhenAll(tasks);
 
         // Assert
@@ -102,16 +98,4 @@ public class SearchSessionTests
     }
 
     #endregion
-
-    private ILogger<SearchSession> ArrangeConsoleLogger()
-    {
-        ILoggerFactory loggerFactory = LoggerFactory.Create(Configure);
-        ILogger<SearchSession> logger = loggerFactory.CreateLogger<SearchSession>();
-        return logger;
-
-        void Configure(ILoggingBuilder builder) =>
-            builder
-                .SetMinimumLevel(LogLevel.Trace)
-                .AddConsole();
-    }
 }
