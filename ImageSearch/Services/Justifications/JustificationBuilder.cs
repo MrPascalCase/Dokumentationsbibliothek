@@ -12,10 +12,17 @@ namespace ImageSearch.Services.Justifications;
 /// </summary>
 public class JustificationBuilder
 {
+    public string MatchStyle { get; init; } = "background: lightgreen; font-weight: bold;";
     public int ContextLength { get; init; } = 40;
     public bool RequireWhitespace { get; init; } = true;
     public bool RespectHardBreak { get; init; } = true;
-    public string MatchStyle { get; init; } = "background: lightgreen; font-weight: bold;";
+
+    /// <summary>
+    ///     When encountering a hard-break-character we stop including more text for context.
+    /// </summary>
+    public IReadOnlyList<char> HardBreakCharacters { get; init; } = new[] { '.', '?', '!', };
+
+    public IReadOnlyList<string> HardBreakExceptions { get; init; } = new[] { "st. moritz", "ca. ", };
 
     [Pure]
     public MarkupString Justify(ImageQuery query, Image image)
@@ -96,10 +103,6 @@ public class JustificationBuilder
         int offset = 0;
         while (true)
         {
-            // Search iteratively, advancing by one character each time
-            // to allow overlapping matches (e.g. "ana" in "banana").
-            // TODO does that work??
-
             int index = text.IndexOf(query, StringComparison.InvariantCultureIgnoreCase);
             if (index >= 0)
             {
@@ -126,13 +129,16 @@ public class JustificationBuilder
         // - we are allowed to break at this position (usually whitespace),
         // unless a hard break (sentence end) is encountered earlier.
         int end = match.MatchRanges.Last().End;
-        for (; end < text.Length && (end < match.MatchRanges.Last().End + ContextLength || !CanBreak(end)); end++)
+        for (; end < text.Length && (end < match.MatchRanges.Last().End + ContextLength || !CanBreak(end + 1)); end++)
         {
-            if (RespectHardBreak && MustBreak(end))
+            if (MustBreak(end + 1))
             {
                 // Stop early at sentence boundaries and suppress trailing ellipsis,
                 // because the context ends naturally.
                 match = match.RemoveElipsesEnd();
+
+                // End character itself must be included
+                end++;
                 break;
             }
         }
@@ -142,7 +148,7 @@ public class JustificationBuilder
         int start = match.MatchRanges.First().Start;
         for (; 0 < start && (match.MatchRanges.First().Start - ContextLength < start || !CanBreak(start)); start--)
         {
-            if (RespectHardBreak && MustBreak(start))
+            if (MustBreak(start))
             {
                 match = match.RemoveElipsesStart();
                 break;
@@ -161,12 +167,46 @@ public class JustificationBuilder
             // Determines whether the context may end at this character.
             // Typically, restricts breaks to whitespace to avoid cutting words.
             if (!RequireWhitespace) return true;
+
+            index -= 1; // We don't want the leading whitespace included.
+
+            if (index >= text.Length) return true;
+            if (index < 0) return true;
             return char.IsWhiteSpace(text[index]);
         }
 
         bool MustBreak(int index)
         {
-            return new[] { '.', '?', '!', }.Contains(text[index]);
+            if (!RespectHardBreak) return false;
+
+            index -= 1; // We don't want the leading hard break included.
+
+            if (index >= text.Length) return false;
+            if (index < 0) return false;
+
+            // is there a '.', '!', or '?' -> normally must break
+            bool isHardBreakCharacter = HardBreakCharacters.Contains(text[index]);
+            if (!isHardBreakCharacter) return false;
+
+            // however, if it is part of 'st. moritz' or 'ca. ' then we don't break
+            bool isException = false;
+            foreach (string exception in HardBreakExceptions)
+            {
+                int indexInException = HardBreakCharacters.Select(c => exception.IndexOf(c, StringComparison.InvariantCultureIgnoreCase)).Max();
+                int exceptionStartInText = index - indexInException;
+
+                if (exceptionStartInText < 0) continue;
+                if (exceptionStartInText + exception.Length >= text.Length) continue;
+
+                string substring = text.Substring(exceptionStartInText, exception.Length);
+                if (string.Equals(substring, exception, StringComparison.InvariantCultureIgnoreCase))
+                {
+                    isException = true;
+                    break;
+                }
+            }
+
+            return !isException;
         }
     }
 
@@ -213,7 +253,7 @@ public class JustificationBuilder
         return true;
     }
 
-    internal void AddToResult(StringBuilder sb, Match match, string text)
+    private void AddToResult(StringBuilder sb, Match match, string text)
     {
         // Renders a single combined match as HTML:
         // - one <div> per match group
@@ -222,7 +262,7 @@ public class JustificationBuilder
 
         sb.Append("<div>");
         if ((match.Elipses & Elipses.Start) != 0) sb.Append("...");
-        sb.Append(text.Substring(match.ContextRange.Start, match.MatchRanges[0].Start - match.ContextRange.Start));
+        sb.Append(text.Substring(match.ContextRange.Start, match.MatchRanges[0].Start - match.ContextRange.Start).TrimStart());
 
         for (int i = 0; i < match.MatchRanges.Count; i++)
         {

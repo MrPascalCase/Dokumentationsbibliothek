@@ -219,7 +219,7 @@ public class JustificationBuilderTest
     }
 
     [TestMethod]
-    public void TestJustify_simple_example_seaching_for_2_terms()
+    public void TestJustify_simple_example_searching_for_2_terms()
     {
         // Arrange
         string text =
@@ -249,6 +249,234 @@ public class JustificationBuilderTest
         // Assert
         Console.WriteLine(result);
         Assert.AreEqual("<div>...bb<span style=\"match\">a</span>bb...</div>", result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_require_whitespace_ellipsis_at_start_hard_break_at_then_end()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 30,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "commodo", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...laboris nisi ut aliquip ex ea <span style=\"match\">commodo</span> consequat.</div>", result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_require_whitespace_ellipsis_at_start_and_end()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 10,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "consectetur", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...sit amet, <span style=\"match\">consectetur</span> adipiscing...</div>", result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_require_whitespace_ellipsis_at_the_end_textstart_at_the_start()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 40,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "consectetur", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>Lorem ipsum dolor sit amet, <span style=\"match\">consectetur</span> adipiscing elit, sed do eiusmod tempor incididunt...</div>",
+            result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_require_whitespace_ellipsis_at_the_start_reaching_text_end()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 15,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "mollit", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...officia deserunt <span style=\"match\">mollit</span> anim id est laborum.</div>", result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_preceding_hard_break()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 20,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "occaecat", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>Excepteur sint <span style=\"match\">occaecat</span> cupidatat non proident,...</div>", result.ToString());
+    }
+
+    [TestMethod]
+    public void TestJustify_preceding_hard_break_which_is_an_exception()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 20,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+            HardBreakExceptions = new[] { "tur. Exc", },
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "occaecat", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...pariatur. Excepteur sint <span style=\"match\">occaecat</span> cupidatat non proident,...</div>", result.ToString());
+    }
+    
+    [TestMethod]
+    public void TestJustify_hard_break_afterwards()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 20,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "fugiat", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...esse cillum dolore eu <span style=\"match\">fugiat</span> nulla pariatur.</div>", result.ToString());
+    }
+
+    
+    [TestMethod]
+    public void TestJustify_hard_break_afterwards_is_an_exception()
+    {
+        // Arrange
+        JustificationBuilder builder = new()
+        {
+            ContextLength = 20,
+            MatchStyle = "match",
+            RequireWhitespace = true,
+            RespectHardBreak = true,
+            HardBreakExceptions = new[] { "tur. Exc", },
+        };
+
+        string input =
+            """
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut 
+            enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor 
+            in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, 
+            sunt in culpa qui officia deserunt mollit anim id est laborum.
+            """;
+
+        // Act
+        MarkupString result = builder.Justify(new[] { "fugiat", }, input);
+
+        // Assert
+        Console.WriteLine(result);
+        Assert.AreEqual("<div>...esse cillum dolore eu <span style=\"match\">fugiat</span> nulla pariatur. Excepteur...</div>", result.ToString());
     }
 
     #endregion
