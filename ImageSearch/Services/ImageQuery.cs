@@ -9,10 +9,14 @@ public class ImageQuery : IEquatable<ImageQuery>
     public IReadOnlyList<string> Description { get; init; } = Array.Empty<string>();
     public int? ImageNr { get; init; }
     public int? Decade { get; init; }
+    public IReadOnlyList<string> Subject { get; init; } = Array.Empty<string>();
 
-    private static readonly string[] DecadeIdentifiers = { "dec", "decade", "dek", "dekade", };
-    private static readonly string[] ImageNrIdentifiers = { "img", "image", "bild", };
+    private static readonly string[] DecadeIdentifiers = { "dekade", "dec", "decade", "dek", };
+    private static readonly string[] ImageNrIdentifiers = { "bildnr", "img", "image", "bild", };
+    private static readonly string[] SubjectIdentifiers = { "thema", "subj", "subject", };
+
     private static readonly char[] DescriptionSeparators = { ',', ' ', '\t', '\n', '\r', ';', };
+    private static readonly char[] SubjectSeparators = { '>', ',', };
 
     public static ImageQuery FromText(string text)
     {
@@ -34,6 +38,7 @@ public class ImageQuery : IEquatable<ImageQuery>
         int? decade = null;
         int? imageNr = null;
         List<string> description = new();
+        string[] subject = Array.Empty<string>();
 
         foreach (string element in elements)
         {
@@ -45,13 +50,17 @@ public class ImageQuery : IEquatable<ImageQuery>
             {
                 imageNr = img;
             }
+            else if (TryParseSubject(element, out string[] sub))
+            {
+                subject = sub;
+            }
             else
             {
                 description.Add(element);
             }
         }
 
-        return new ImageQuery { Decade = decade, ImageNr = imageNr, Description = description, };
+        return new ImageQuery { Decade = decade, ImageNr = imageNr, Description = description, Subject = subject, };
     }
 
     public string ToCanonicalSearchText()
@@ -60,6 +69,11 @@ public class ImageQuery : IEquatable<ImageQuery>
 
         if (Decade != null) result += $" {DecadeIdentifiers[0]}:{Decade}";
         if (ImageNr != null) result += $" {ImageNrIdentifiers[0]}:{ImageNr}";
+
+        if (Subject.Any())
+        {
+            result += $" {SubjectIdentifiers[0]}:{string.Join(SubjectSeparators[0], Subject)}";
+        }
 
         foreach (string description in Description)
         {
@@ -82,6 +96,7 @@ public class ImageQuery : IEquatable<ImageQuery>
         int? decade = null;
         int? imageNr = null;
         List<string> description = new();
+        string[] subject = Array.Empty<string>();
 
         string[] components = query.Split('&', StringSplitOptions.RemoveEmptyEntries);
         foreach (string component in components)
@@ -103,6 +118,12 @@ public class ImageQuery : IEquatable<ImageQuery>
                 imageNr = int.TryParse(parts[1], out int img) ? img : throw new Exception($"'{parts[1]}' is not a valid image number.");
             }
 
+            if (SubjectIdentifiers.Contains(key))
+            {
+                string value = parts[1];
+                subject = value.Split(SubjectSeparators, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            }
+
             if (key == "query")
             {
                 description.AddRange(
@@ -112,7 +133,7 @@ public class ImageQuery : IEquatable<ImageQuery>
             }
         }
 
-        return new ImageQuery { Decade = decade, ImageNr = imageNr, Description = description, };
+        return new ImageQuery { Decade = decade, ImageNr = imageNr, Description = description, Subject = subject, };
     }
 
     public string ToUrl()
@@ -122,6 +143,7 @@ public class ImageQuery : IEquatable<ImageQuery>
         if (Description.Any()) url += "query=" + string.Join(",", Description.Select(UrlEncoder.Default.Encode));
         if (ImageNr != null) url += $"&{ImageNrIdentifiers[0]}={ImageNr}";
         if (Decade != null) url += $"&{DecadeIdentifiers[0]}={Decade}";
+        if (Subject.Any()) url += $"&{SubjectIdentifiers[0]}={string.Join(",", Subject)}";
 
         if (url == "?") return string.Empty;
         return url;
@@ -146,6 +168,11 @@ public class ImageQuery : IEquatable<ImageQuery>
         if (ImageNr != null)
         {
             elements.Add(InParenthesis($"Bildnummer: {ImageNr}"));
+        }
+
+        if (Subject.Any())
+        {
+            elements.Add(InParenthesis($"Thema: {string.Join(SubjectSeparators[0], Subject)}"));
         }
 
         return string.Join(" ", elements);
@@ -189,6 +216,23 @@ public class ImageQuery : IEquatable<ImageQuery>
         return false;
     }
 
+    private static bool TryParseSubject(string element, out string[] subject)
+    {
+        string lower = element.ToLowerInvariant();
+        foreach (string identifier in SubjectIdentifiers)
+        {
+            if (lower.StartsWith(identifier + ":"))
+            {
+                string value = element.Substring((identifier + ":").Length);
+                subject = value.Split(SubjectSeparators, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                return true;
+            }
+        }
+
+        subject = Array.Empty<string>();
+        return false;
+    }
+
     public bool Equals(ImageQuery? other)
     {
         if (other is null) return false;
@@ -198,7 +242,10 @@ public class ImageQuery : IEquatable<ImageQuery>
                && Decade == other.Decade
                && Description
                    .OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase)
-                   .SequenceEqual(other.Description.OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase));
+                   .SequenceEqual(other.Description.OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase))
+               && Subject
+                   .Select(s => s.ToLowerInvariant())
+                   .SequenceEqual(other.Subject.Select(s => s.ToLowerInvariant()));
     }
 
     public override bool Equals(object? obj)
@@ -219,6 +266,11 @@ public class ImageQuery : IEquatable<ImageQuery>
         foreach (string description in Description.OrderBy(d => d, StringComparer.InvariantCultureIgnoreCase))
         {
             hash.Add(description, StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        foreach (string subject in Subject)
+        {
+            hash.Add(subject, StringComparer.InvariantCultureIgnoreCase);
         }
 
         return hash.ToHashCode();
