@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "ImageSearch",
   "resources": {
-    "hash": "sha256-sOGi+qdLHzsKj96o6/sXeTjoyjLdBpMscuB9uhAUZeY=",
+    "hash": "sha256-VcBWjGVllIpx7Fg5DA2Si2P46msrJo/I4J8HvZ7jsx0=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Components.b69i26822x.wasm": "Microsoft.AspNetCore.Components.wasm",
       "Microsoft.AspNetCore.Components.Web.hensikmp0w.wasm": "Microsoft.AspNetCore.Components.Web.wasm",
@@ -57,7 +57,7 @@
       "System.t4d4s3f398.wasm": "System.wasm",
       "netstandard.n1a597dekw.wasm": "netstandard.wasm",
       "System.Private.CoreLib.jms4hhhny8.wasm": "System.Private.CoreLib.wasm",
-      "ImageSearch.n127nbsshx.wasm": "ImageSearch.wasm",
+      "ImageSearch.nm6oxwrbzh.wasm": "ImageSearch.wasm",
       "dotnet.js": "dotnet.js",
       "dotnet.native.noby4tlk4d.js": "dotnet.native.js",
       "dotnet.native.qe75a9vfqn.wasm": "dotnet.native.wasm",
@@ -137,7 +137,7 @@
       "System.Xml.Linq.62mgoxb9g2.wasm": "sha256-UgDQgumqZj6p9gp1AxxwuF7FY0ittV25c4qrMW9q7XY=",
       "System.t4d4s3f398.wasm": "sha256-fVP2BxRRKpBA0PmBbKxmO45bXDrAXVn1GthlDclLbeU=",
       "netstandard.n1a597dekw.wasm": "sha256-Gzck1SEeRh969NIGuMehiXdXB5yvUwh7E5vSLTM2g/4=",
-      "ImageSearch.n127nbsshx.wasm": "sha256-5baesjwjmNjiiKvkUGwpOL+hwtwo3wvh5RRWpikwi7I="
+      "ImageSearch.nm6oxwrbzh.wasm": "sha256-j+j9OsGcqz0NRovUXrX+cidgrpcI4CtuIgMfI+0KouU="
     }
   },
   "cacheBootResources": true,
