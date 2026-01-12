@@ -1,4 +1,5 @@
-﻿using ImageSearch.Services;
+﻿using System.Text.Encodings.Web;
+using ImageSearch.Services;
 
 namespace ImageSearch.Test.Services;
 
@@ -11,11 +12,11 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_by_imageNr()
     {
         // Arrange
-        ISearchService searchService = new SearchService(new HttpClient(), null);
+        ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await searchService.LoadIds(new ImageQuery { ImageNr = 14826, }, 0, 25);
-        Image? image = await searchService.LoadImage(ids.Single());
+        ImageIdCollection ids = await service.LoadIds(new ImageQuery { ImageNr = 14826, }, 0, 25);
+        Image? image = await service.LoadImage(ids.Single());
 
         // Assert
         Console.WriteLine(image);
@@ -25,10 +26,10 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_fetch_ids_form_2_pages()
     {
         // Arrange
-        ISearchService searchService = new SearchService(new HttpClient(), null);
+        ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 0, 40);
+        ImageIdCollection ids = await service.LoadIds(ImageQuery.FromText("Postauto"), 0, 40);
 
         // Assert
         Assert.AreEqual(40, ids.Count);
@@ -39,7 +40,7 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_load_2_ids_from_2_pages()
     {
         // Arrange
-        ISearchService searchService = new SearchService(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
         ImageIdCollection ids = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 0, 50);
 
         // Act
@@ -60,7 +61,7 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_load_ids_from_3_pages_that_would_fit_on_2_pages()
     {
         // Arrange
-        ISearchService searchService = new SearchService(new HttpClient(), null);
+        ISearchService searchService = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
         ImageIdCollection ids0To100 = await searchService.LoadIds(ImageQuery.FromText("Schnee"), 0, 100);
 
         // Act
@@ -83,7 +84,7 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_5_images_for_postauto()
     {
         // Arrange
-        ISearchService search = new SearchService(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Postauto"), 0, 5);
@@ -101,7 +102,7 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadIds_5_images_for_schnee()
     {
         // Arrange
-        ISearchService search = new SearchService(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("schnee"), 0, 5);
@@ -114,16 +115,15 @@ public class SearchServiceTest : TestBase
             Assert.IsTrue(image.Description.ToLowerInvariant().Contains("schnee"));
         }
     }
-
     #endregion
 
-    #region Test for the method 'LoadImages'
-
+    #region Test for the method 'LoadImage(s)'
+    
     [TestMethod]
     public async Task TestLoadImages_5_images_for_Morteratsch()
     {
         // Arrange
-        ISearchService search = new SearchService(new HttpClient(), null);
+        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
         ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Morteratsch"), 0, 5);
 
         // Act
@@ -138,7 +138,6 @@ public class SearchServiceTest : TestBase
     }
 
     #endregion
-
 
     #region Test for the method 'ResolveNodeLabel'
 
@@ -162,7 +161,7 @@ public class SearchServiceTest : TestBase
     public async Task TestSearch_check_that_both_endpoints_return_consistent_counts()
     {
         // Arrange
-        ISearchService service = new SearchService(new HttpClient(), null);
+        ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
         ImageQuery query = ImageQuery.ParseSearchText("dec:1930 postauto")!;
 
         // Act

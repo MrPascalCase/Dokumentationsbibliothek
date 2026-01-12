@@ -104,14 +104,16 @@ public class SearchService : ISearchService, IImageDetailResolver
     {
         if (string.IsNullOrWhiteSpace(imageId)) throw new ArgumentNullException(nameof(imageId));
 
-        string details = await QueryImageDetails(imageId);
-        if (_imageBuilder.IsValidImage(details, out string? error))
+        string content = await QueryImageDetails(imageId);
+        _logger?.LogTrace($"Received image-data for image id='{imageId}': {content}");
+        
+        if (_imageBuilder.IsValidImage(content, out string? error))
         {
-            Image img = await _imageBuilder.BuildImage(details);
+            Image img = await _imageBuilder.BuildImage(content);
             return img;
         }
 
-        _logger?.LogWarning($"Image with Id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{details}");
+        _logger?.LogWarning($"Image with id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{content}");
         return null;
     }
 
