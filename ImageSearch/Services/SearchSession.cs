@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Diagnostics;
+using ImageSearch.Services.Dto;
 
 namespace ImageSearch.Services;
 

@@ -1,4 +1,5 @@
 ﻿using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 using NSubstitute;
 
 namespace ImageSearch.Test.Services;

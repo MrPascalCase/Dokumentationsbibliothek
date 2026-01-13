@@ -1,5 +1,6 @@
 ﻿using System.CodeDom.Compiler;
 using System.Text;
+using ImageSearch.Services.Dto;
 
 namespace ImageSearch.Services.QueryProcessing;
 

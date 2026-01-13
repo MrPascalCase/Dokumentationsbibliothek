@@ -1,4 +1,5 @@
 using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 using Microsoft.AspNetCore.Components;
 
 namespace ImageSearch.Pages;

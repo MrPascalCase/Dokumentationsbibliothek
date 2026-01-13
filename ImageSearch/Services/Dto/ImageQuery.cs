@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Text.Encodings.Web;
 
-namespace ImageSearch.Services;
+namespace ImageSearch.Services.Dto;
 
 [Serializable]
 public class ImageQuery : IEquatable<ImageQuery>

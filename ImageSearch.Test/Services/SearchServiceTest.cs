@@ -1,5 +1,5 @@
-﻿using System.Text.Encodings.Web;
-using ImageSearch.Services;
+﻿using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 
 namespace ImageSearch.Test.Services;
 
@@ -115,10 +115,11 @@ public class SearchServiceTest : TestBase
             Assert.IsTrue(image.Description.ToLowerInvariant().Contains("schnee"));
         }
     }
+
     #endregion
 
     #region Test for the method 'LoadImage(s)'
-    
+
     [TestMethod]
     public async Task TestLoadImages_5_images_for_Morteratsch()
     {
@@ -153,6 +154,56 @@ public class SearchServiceTest : TestBase
         // Assert
         Console.WriteLine(result);
         Assert.AreEqual("Winter", result);
+    }
+
+    #endregion
+
+    #region Tests for the method 'SearchPeople'
+
+    [TestMethod]
+    public async Task TestSearchPeople_find_all_the_alberts()
+    {
+        // Arrange
+        SearchService service = new(new HttpClient(), ArrangeConsoleLogger<SearchService>());
+
+        // Act
+        Person[] results = await service.SearchPeople("albert");
+
+        // Assert
+        Assert.IsTrue(results.Length >= 3);
+
+        Person steiner = results.Single(p => p.LastName == "Steiner");
+        Assert.AreEqual("Albert", steiner.FirstName);
+        Assert.AreEqual("St. Moritz", steiner.City);
+        Assert.AreEqual("http://rdfh.ch/0804/yy-J4xvSQeeiMvEATP_wpA", steiner.Id);
+
+        Person maennchen = results.Single(p => p.LastName == "Maennchen");
+        Assert.AreEqual("Albert", maennchen.FirstName);
+        Assert.AreEqual("Berlin", maennchen.City);
+        Assert.AreEqual("http://rdfh.ch/0804/629EFJ4oTDK9daLn3UV8NQ", maennchen.Id);
+
+        Person scheuing = results.Single(p => p.LastName == "Scheuing");
+        Assert.AreEqual("Albert", scheuing.FirstName);
+        Assert.AreEqual("http://rdfh.ch/0804/kjnHjyRORnGJiPS1Frl99Q", scheuing.Id);
+    }
+
+    [TestMethod]
+    public async Task TestSearchPeople_find_the_albert()
+    {
+        // Arrange
+        SearchService service = new(new HttpClient(), ArrangeConsoleLogger<SearchService>());
+
+        // Act
+        Person[] results = await service.SearchPeople("maennchen, albert");
+
+        // Assert
+        Assert.AreEqual(1, results.Length);
+        Person maennchen = results.Single();
+
+        Assert.AreEqual("Albert", maennchen.FirstName);
+        Assert.AreEqual("Maennchen", maennchen.LastName);
+        Assert.AreEqual("Berlin", maennchen.City);
+        Assert.AreEqual("http://rdfh.ch/0804/629EFJ4oTDK9daLn3UV8NQ", maennchen.Id);
     }
 
     #endregion

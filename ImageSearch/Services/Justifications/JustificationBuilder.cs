@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using System.Text;
+using ImageSearch.Services.Dto;
 using Microsoft.AspNetCore.Components;
 
 namespace ImageSearch.Services.Justifications;

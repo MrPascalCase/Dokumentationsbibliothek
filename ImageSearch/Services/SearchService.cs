@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
+using ImageSearch.Services.Dto;
 using ImageSearch.Services.QueryProcessing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -17,7 +18,10 @@ public class SearchService : ISearchService, IImageDetailResolver
     private const string CountEndpoint = "https://api.dasch.swiss/v2/searchextended/count";
     private const string ResourcesEndpoint = "https://api.dasch.swiss/v2/resources";
     private const string NodeEndpoint = "https://api.dasch.swiss/v2/node";
+    private const string SearchByLabelEndpoint = "https://api.dasch.swiss/v2/searchbylabel";
 
+    private const string PeopleResourceClass = "http%3A%2F%2Fapi.dasch.swiss%2Fontology%2F0804%2Fdokubib%2Fv2%23Person";
+    
     private readonly ILogger<SearchService>? _logger;
     private readonly HttpClient _httpClient;
     private readonly ConcurrentDictionary<string, string> _nodeLabelCache;
@@ -136,6 +140,26 @@ public class SearchService : ISearchService, IImageDetailResolver
         return label;
     }
 
+    public async Task<Person[]> SearchPeople(string name)
+    {
+        string encoded = UrlEncoder.Default.Encode(name);
+        string url = $"{SearchByLabelEndpoint}/{encoded}?offset=0&limitToResourceClass={PeopleResourceClass}";
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        
+        Stopwatch sw = Stopwatch.StartNew();
+        HttpResponseMessage response = await _httpClient.SendAsync(request);
+        _logger?.LogInformation($"Response form {SearchByLabelEndpoint} arrived in {sw.ElapsedMilliseconds} ms.");
+        
+        response.EnsureSuccessStatusCode();
+
+        string content = await response.Content.ReadAsStringAsync();
+
+        PersonBuilder builder = new PersonBuilder();
+        Person[] result = builder.BuildPeople(content);
+
+        return result;
+    }
+
     private async Task<string> RunQuery(string query, string endpoint)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
@@ -220,8 +244,9 @@ public class SearchService : ISearchService, IImageDetailResolver
 
         return await response.Content.ReadAsStringAsync();
     }
-
-
+    
+    
+    
     async Task<string> IImageDetailResolver.ResolveSeasonNodeLabel(string nodeId)
     {
         return await ResolveNodeLabel(nodeId);

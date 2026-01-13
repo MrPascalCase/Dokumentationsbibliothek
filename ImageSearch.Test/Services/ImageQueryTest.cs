@@ -1,5 +1,5 @@
 using System.Text.Json;
-using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 
 namespace ImageSearch.Test.Services;
 

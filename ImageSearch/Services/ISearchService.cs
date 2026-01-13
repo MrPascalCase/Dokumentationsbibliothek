@@ -1,4 +1,5 @@
-﻿using ImageSearch.Services.QueryProcessing;
+﻿using ImageSearch.Services.Dto;
+using ImageSearch.Services.QueryProcessing;
 
 namespace ImageSearch.Services;
 
