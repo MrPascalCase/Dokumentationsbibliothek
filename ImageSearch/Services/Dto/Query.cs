@@ -38,7 +38,6 @@ public class Query : IEquatable<Query>
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (string.IsNullOrWhiteSpace(text)) return null;
 
-
         (string? key, string value)[] elements = Tokenize(text);
 
         int? decade = null;
@@ -86,7 +85,14 @@ public class Query : IEquatable<Query>
             }
         }
 
-        return new Query { Decade = decade, ImageNr = imageNr, Terms = description, Subject = subject, Author = author, };
+        Query result = new() { Decade = decade, ImageNr = imageNr, Terms = description, Subject = subject, Author = author, };
+        if (result == new Query())
+        {
+            // The UI does not expect that search without restrictions is possible.
+            return null;
+        }
+
+        return result;
     }
 
     public string ToCanonicalSearchText()

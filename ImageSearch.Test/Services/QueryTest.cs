@@ -73,7 +73,20 @@ public class QueryTest
     }
 
     [TestMethod]
-    public void TestParseSearchText_incomplete_author()
+    public void TestParseSearchText_incomplete_author_1()
+    {
+        // Arrange
+        string input = "autor:";
+
+        // Act
+        Query? query = Query.ParseSearchText(input);
+
+        // Assert
+        Assert.IsNull(query);
+    }
+    
+    [TestMethod]
+    public void TestParseSearchText_incomplete_author_2()
     {
         // Arrange
         string input = "autor:\"";
@@ -82,24 +95,20 @@ public class QueryTest
         Query query = Query.ParseSearchText(input)!;
 
         // Assert
-        Assert.IsNull(query.Author);
-        string representation = query.ToString();
-        Assert.AreEqual(string.Empty, representation);
+        Assert.IsNull(query);
     }
 
     [TestMethod]
-    public void TestParseSearchText_incomplete_author_2()
+    public void TestParseSearchText_incomplete_author_3()
     {
         // Arrange
         string input = "autor:\" \"";
 
         // Act
-        Query query = Query.ParseSearchText(input)!;
+        Query? query = Query.ParseSearchText(input);
 
         // Assert
-        Assert.IsNull(query.Author);
-        string representation = query.ToString();
-        Assert.AreEqual(string.Empty, representation);
+        Assert.IsNull(query);
     }
 
     #endregion

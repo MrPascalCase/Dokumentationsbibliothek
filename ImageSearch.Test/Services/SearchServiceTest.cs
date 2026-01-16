@@ -144,8 +144,7 @@ public class SearchServiceTest : TestBase
     }
 
     [TestMethod]
-    [Ignore] // TODO this test fails as there are multiple steiner, hanses and no images that are from BOTH of them.
-    public async Task TestLoadIds_search_for_autor_steiner_hans()
+    public async Task TestLoadIds_search_for_autor_steiner_hans_where_2_such_people_exist()
     {
         // Arrange
         ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
@@ -155,10 +154,30 @@ public class SearchServiceTest : TestBase
         ImageIdCollection ids = await search.LoadIds(query, 0, 5);
 
         // Assert
-        Assert.IsTrue(ids.Any());
+        Person hansBern = new()
+        {
+            FirstName = "Hans",
+            LastName = "Steiner",
+            City = "Bern",
+            Id = "http://rdfh.ch/0804/5OGk3ZrQTMSlt0f4SL9tBw",
+        };
 
-        // Assert.IsNotNull(query.CachedAuthors);
-        // Assert.AreEqual(1, query.CachedAuthors.Count);
+        Person hansStMoritz = new()
+        {
+            FirstName = "Hans",
+            LastName = "Steiner",
+            City = "St. Moritz",
+            Id = "http://rdfh.ch/0804/ZFP4lrB0TG2zHwqLfwNfrA",
+        };
+
+        IReadOnlyList<Person> authors = query.CachedAuthors!.ToArray();
+        CollectionAssert.AreEquivalent(new[] { hansBern, hansStMoritz, }, authors.ToArray());
+
+        Image[] images = await search.LoadImages(ids);
+        foreach (Image image in images)
+        {
+            Assert.AreEqual("Steiner, Hans", image.Urheber);
+        }
     }
 
     #endregion
@@ -253,6 +272,8 @@ public class SearchServiceTest : TestBase
 
     #endregion
 
+    #region Check consistency between count and search
+
     [TestMethod]
     public async Task TestSearch_check_that_both_endpoints_return_consistent_counts()
     {
@@ -270,4 +291,6 @@ public class SearchServiceTest : TestBase
 
         Assert.AreEqual(count, ids.Count);
     }
+
+    #endregion
 }

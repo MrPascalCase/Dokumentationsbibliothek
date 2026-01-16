@@ -70,7 +70,7 @@ public class SearchService : ISearchService, IImageDetailResolver
 
         QueryProcessor processor = new();
         string sparqlQuery = processor.BuildQuery(query);
-        
+
         _logger?.LogTrace($"Loading Ids {start} to {start + count} for query='{sparqlQuery}'");
 
         int startPage = start / ApiPageSize; // Start page number of the API
@@ -181,6 +181,11 @@ public class SearchService : ISearchService, IImageDetailResolver
         Stopwatch sw = Stopwatch.StartNew();
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         _logger?.LogInformation($"Response form {endpoint} arrived in {sw.ElapsedMilliseconds} ms.");
+
+        // if (response.StatusCode != HttpStatusCode.OK)
+        // {
+        //     Pointless, they don't give reasons...
+        // }
 
         response.EnsureSuccessStatusCode();
 

@@ -45,13 +45,7 @@ public class QueryProcessor
         if (query.Decade != null) components.Add(new DecadeFiler(i++, query.Decade.Value));
         foreach (string text in query.Terms) components.Add(new DescriptionFilter(i++, text));
 
-        if (query.CachedAuthors != null)
-        {
-            foreach (Person author in query.CachedAuthors)
-            {
-                components.Add(new AuthorFilter(i++, author));
-            }
-        }
+        if (query.CachedAuthors != null && query.CachedAuthors.Any()) components.Add(new AuthorFilter(i++, query.CachedAuthors));
 
         return components;
     }
