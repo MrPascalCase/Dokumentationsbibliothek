@@ -38,7 +38,7 @@ https://app.dasch.swiss/project/ZjLtCB-rRpG-NglRpxy1dg/search
 - ~~check and resolve warnings that images are loaded twice~~
 - click outside image-preview should close the overlay
 - ~~reaching /search?query=post does not show the number of images found statistics~~
-- fix "Erfassungsdatum"
+- ~~fix "Erfassungsdatum"~~
 - improve detaillayout
 - ~~bild id in the detail view is wrong~~
 - ~~fix search autor:\"Steiner, Hans\" (mutiple people of the same name)~~
