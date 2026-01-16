@@ -86,9 +86,8 @@ public class QueryTest
         string representation = query.ToString();
         Assert.AreEqual(string.Empty, representation);
     }
-    
+
     [TestMethod]
-    [Ignore] // TODO this is broken, probably should be fixed when we support 
     public void TestParseSearchText_incomplete_author_2()
     {
         // Arrange
@@ -204,9 +203,30 @@ public class QueryTest
         };
 
         // Act
-        Query? result = Query.ParseSearchText(query.ToCanonicalSearchText());
+        string searchText = query.ToCanonicalSearchText();
+        Query? result = Query.ParseSearchText(searchText);
 
         // Assert
+        Console.WriteLine(searchText);
+        Assert.IsNotNull(result);
+        Assert.AreEqual(query, result);
+    }
+    
+    [TestMethod]
+    public void TestToCanonicalSearchText_and_ParseSearchText_are_round_tripable_author_contains_whitespace()
+    {
+        // Arrange
+        Query query = new()
+        {
+            Author = "Steiner, Albert", Decade = 1950, ImageNr = null, Terms = new[] { "postauto", "winter", }, Subject = new[] { "Wirtschaft", },
+        };
+
+        // Act
+        string searchText = query.ToCanonicalSearchText();
+        Query? result = Query.ParseSearchText(searchText);
+
+        // Assert
+        Console.WriteLine(searchText);
         Assert.IsNotNull(result);
         Assert.AreEqual(query, result);
     }
@@ -281,6 +301,143 @@ public class QueryTest
         // Assert
         Assert.IsFalse(result);
         Assert.AreNotEqual(hash1, hash2);
+    }
+
+    #endregion
+
+    #region Tests for the method 'Tokenize'
+
+    [TestMethod]
+    public void TestTokenize_no_input()
+    {
+        // Arrange
+        string input = string.Empty;
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(0, result.Length);
+    }
+
+    [TestMethod]
+    public void TestTokenize_2_words_without_key()
+    {
+        // Arrange
+        string input = "hello world";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(2, result.Length);
+        Assert.IsTrue(result.All(r => r.key == null));
+        CollectionAssert.AreEquivalent(new[] { "hello", "world", }, result.Select(r => r.value).ToArray());
+    }
+    
+    [TestMethod]
+    public void TestTokenize_2_words_split_by_tab()
+    {
+        // Arrange
+        string input = "hello\tworld";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(2, result.Length);
+        Assert.IsTrue(result.All(r => r.key == null));
+        CollectionAssert.AreEquivalent(new[] { "hello", "world", }, result.Select(r => r.value).ToArray());
+    }
+    
+    [TestMethod]
+    public void TestTokenize_2_words_enquoted()
+    {
+        // Arrange
+        string input = " \"hello  world\"  ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(1, result.Length);
+        Assert.IsNull(result[0].key);
+        Assert.AreEqual("hello  world", result[0].value);
+    }
+    
+    [TestMethod]
+    public void TestTokenize_some_words_enquoted()
+    {
+        // Arrange
+        string input = " \"post hotel\" auto ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(2, result.Length);
+        Assert.IsTrue(result.All(r => r.key == null));
+        CollectionAssert.AreEquivalent(new[] { "post hotel", "auto", }, result.Select(r => r.value).ToArray());
+    }
+    
+    [TestMethod]
+    public void TestTokenize_some_words_enquoted_space_lacking()
+    {
+        // Arrange
+        string input = " \"post hotel\"auto ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(2, result.Length);
+        Assert.IsTrue(result.All(r => r.key == null));
+        CollectionAssert.AreEquivalent(new[] { "post hotel", "auto", }, result.Select(r => r.value).ToArray());
+    }
+    
+    [TestMethod]
+    public void TestTokenize_author()
+    {
+        // Arrange
+        string input = " autor:\"steiner, albert\" ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(1, result.Length);
+        Assert.AreEqual("autor", result[0].key);
+        Assert.AreEqual("steiner, albert", result[0].value);
+    }
+    
+    [TestMethod]
+    public void TestTokenize_author_inconsistent()
+    {
+        // Arrange
+        string input = "autor:autor:\"steiner, albert\" ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(1, result.Length);
+        Assert.AreEqual("autor", result[0].key);
+        Assert.AreEqual("steiner, albert", result[0].value);
+    }
+    
+    [TestMethod]
+    public void TestTokenize_author_with_additional_whitespaces()
+    {
+        // Arrange
+        string input = "  autor: \t \"steiner, albert\" ";
+
+        // Act
+        (string? key, string value)[] result = Query.Tokenize(input);
+
+        // Assert
+        Assert.AreEqual(1, result.Length);
+        Assert.AreEqual("autor", result[0].key);
+        Assert.AreEqual("steiner, albert", result[0].value);
     }
 
     #endregion

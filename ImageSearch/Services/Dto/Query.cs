@@ -12,9 +12,9 @@ public class Query : IEquatable<Query>
     public int? Decade { get; init; }
     public IReadOnlyList<string> Subject { get; init; } = Array.Empty<string>();
     public string? Author { get; init; }
-    
-    public IReadOnlyList<Person>? CachedAuthors { get; set; } 
-    
+
+    public IReadOnlyList<Person>? CachedAuthors { get; set; }
+
     private static readonly string[] DecadeIdentifiers = { "dekade", "dec", "decade", "dek", };
     private static readonly string[] ImageNrIdentifiers = { "bildnr", "img", "image", "bild", };
     private static readonly string[] SubjectIdentifiers = { "thema", "subj", "subject", };
@@ -38,7 +38,8 @@ public class Query : IEquatable<Query>
         if (text == null) throw new ArgumentNullException(nameof(text));
         if (string.IsNullOrWhiteSpace(text)) return null;
 
-        string[] elements = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        (string? key, string value)[] elements = Tokenize(text);
 
         int? decade = null;
         int? imageNr = null;
@@ -46,27 +47,42 @@ public class Query : IEquatable<Query>
         string[] subject = Array.Empty<string>();
         string? author = null;
 
-        foreach (string element in elements)
+        foreach ((string? key, string value) in elements)
         {
-            if (TryParseDecade(element, out int dec))
+            if (key == null)
             {
-                decade = dec;
+                description.Add(value);
+                continue;
             }
-            else if (TryParseImageNr(element, out int img))
+
+            if (DecadeIdentifiers.Contains(key))
             {
-                imageNr = img;
+                if (int.TryParse(value, out int dec))
+                {
+                    decade = dec;
+                }
+
+                continue;
             }
-            else if (TryParseSubject(element, out string[] sub))
+
+            if (ImageNrIdentifiers.Contains(key))
             {
-                subject = sub;
+                if (int.TryParse(value, out int img))
+                {
+                    imageNr = img;
+                }
+
+                continue;
             }
-            else if (TryParseAuthor(element, out string aut))
+
+            if (SubjectIdentifiers.Contains(key))
             {
-                author = aut;
+                subject = value.Split(SubjectSeparators, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             }
-            else
+
+            if (AuthorIdentifiers.Contains(key))
             {
-                description.Add(element);
+                author = value;
             }
         }
 
@@ -87,7 +103,7 @@ public class Query : IEquatable<Query>
 
         if (!string.IsNullOrWhiteSpace(Author))
         {
-            result += $" {AuthorIdentifiers[0]}:'{Author}'";
+            result += $" {AuthorIdentifiers[0]}:{Enquote(Author)}";
         }
 
         foreach (string description in Terms)
@@ -96,6 +112,11 @@ public class Query : IEquatable<Query>
         }
 
         return result.Trim();
+
+        string Enquote(string input)
+        {
+            return input.Any(char.IsWhiteSpace) ? $"\"{input}\"" : input;
+        }
     }
 
     public static Query? ParseUrl(string query)
@@ -212,88 +233,63 @@ public class Query : IEquatable<Query>
         }
     }
 
-    private static bool TryParseDecade(string element, out int decade)
+    internal static (string? key, string value)[] Tokenize(string input)
     {
-        string lower = element.ToLowerInvariant();
-        foreach (string identifier in DecadeIdentifiers)
+        List<(string?, string)> result = new();
+
+        string value = string.Empty;
+        string? key = null;
+        bool inQuotationMarks = false;
+
+        foreach (char c in input)
         {
-            if (lower.StartsWith(identifier + ":"))
+            switch (c)
             {
-                string value = element.Substring((identifier + ":").Length);
-                if (int.TryParse(value, out decade)) return true;
-            }
-        }
+                case '\'':
+                case '\"':
+                    Flush();
+                    inQuotationMarks = !inQuotationMarks;
+                    break;
 
-        decade = 0;
-        return false;
-    }
-
-    private static bool TryParseImageNr(string element, out int imageNr)
-    {
-        string lower = element.ToLowerInvariant();
-        foreach (string identifier in ImageNrIdentifiers)
-        {
-            if (lower.StartsWith(identifier + ":"))
-            {
-                string value = element.Substring((identifier + ":").Length);
-                if (int.TryParse(value, out imageNr)) return true;
-            }
-        }
-
-        imageNr = 0;
-        return false;
-    }
-
-    private static bool TryParseSubject(string element, out string[] subject)
-    {
-        string lower = element.ToLowerInvariant();
-        foreach (string identifier in SubjectIdentifiers)
-        {
-            if (lower.StartsWith(identifier + ":"))
-            {
-                string value = element.Substring((identifier + ":").Length);
-                subject = value.Split(SubjectSeparators, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                return true;
-            }
-        }
-
-        subject = Array.Empty<string>();
-        return false;
-    }
-
-    private static bool TryParseAuthor(string element, out string? author)
-    {
-        string lower = element.ToLowerInvariant();
-        foreach (string identifier in AuthorIdentifiers)
-        {
-            if (lower.StartsWith(identifier + ":"))
-            {
-                string value = element.Substring((identifier + ":").Length);
-                if (value.ToCharArray().All(c => char.IsWhiteSpace(c) || c == '\'' || c == '"'))
-                {
-                    author = null;
-                    return true; // author is not set, however do not treat "autor:" as a search term.
-                }
-                
-                while (true)
-                {
-                    if ((value.StartsWith("\"") && value.EndsWith("\""))
-                        || (value.StartsWith("'") && value.EndsWith("'")))
+                case ':':
+                    value = value.Trim();
+                    if (value != string.Empty)
                     {
-                        value = value.Substring(1, value.Length - 2);
-                        continue;
+                        key = value;
+                    }
+
+                    value = string.Empty;
+                    break;
+
+                default:
+                    if (char.IsWhiteSpace(c) && !inQuotationMarks)
+                    {
+                        Flush();
+                    }
+                    else
+                    {
+                        value += c;
                     }
 
                     break;
-                }
-
-                author = value;
-                return true;
             }
         }
 
-        author = null;
-        return false;
+        Flush();
+
+        return result.ToArray();
+
+        void Flush()
+        {
+            value = value.Trim();
+            if (value != string.Empty)
+            {
+                result.Add((key, value));
+                key = null;
+            }
+
+            value = string.Empty;
+        }
     }
 
     public bool Equals(Query? other)
