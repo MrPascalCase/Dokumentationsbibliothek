@@ -41,4 +41,4 @@ https://app.dasch.swiss/project/ZjLtCB-rRpG-NglRpxy1dg/search
 - fix "Erfassungsdatum"
 - improve detaillayout
 - ~~bild id in the detail view is wrong~~
-- fix search autor:\"Steiner, Hans\"
+- ~~fix search autor:\"Steiner, Hans\" (mutiple people of the same name)~~
