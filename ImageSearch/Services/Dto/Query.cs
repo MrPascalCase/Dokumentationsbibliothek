@@ -119,6 +119,19 @@ public class Query : IEquatable<Query>
         }
     }
 
+    public string ToLinkDisplayText()
+    {
+        string displayText = ToCanonicalSearchText();
+        string[] parts = displayText.Split(new[] { ':', }, StringSplitOptions.TrimEntries);
+        if (parts.Length == 2)
+        {
+            displayText = parts[1];
+            displayText = RemoveQuotes(displayText);
+        }
+
+        return displayText;
+    }
+
     public static Query? ParseUrl(string query)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
@@ -345,5 +358,23 @@ public class Query : IEquatable<Query>
     public static bool operator !=(Query? left, Query? right)
     {
         return !Equals(left, right);
+    }
+
+    private static string RemoveQuotes(string input)
+    {
+        while (true)
+        {
+            if (input.Length >= 2
+                && ((input.StartsWith("\"") && input.EndsWith("\""))
+                    || (input.StartsWith("'") && input.EndsWith("'"))))
+            {
+                input = input.Substring(1, input.Length - 2);
+                continue;
+            }
+
+            break;
+        }
+
+        return input;
     }
 }

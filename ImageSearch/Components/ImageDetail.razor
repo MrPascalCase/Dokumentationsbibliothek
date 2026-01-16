@@ -1,4 +1,6 @@
-﻿<div class="container">
+﻿@using ImageSearch.Services.Dto
+
+<div class="container">
     <div class="left" style="@AspectRatioStyle">
         <div class="placeholder"></div>
 
@@ -42,20 +44,13 @@
 
             <dt>Dekade</dt>
             <dd>
-                @if (DecadeLink != null)
-                {
-                    <a href="@DecadeLink.Url" @onclick="NavigateToDecadeSearch">
-                        @DecadeLink.Text
-                    </a>
-                }
-                else
-                {
-                    @("<keine Angabe>")
-                }
+                <QueryLink Query="@(_result?.Decade == null ? null : new Query { Decade = _result.Decade, })"/>
             </dd>
 
             <dt>Urheber</dt>
-            <dd>@(_result?.Urheber ?? "<keine Angabe>")</dd>
+            <dd>
+                <QueryLink Query="@(_result?.Urheber == null ? null : new Query { Author = _result.Urheber, })"/>
+            </dd>
 
             <dt>Lizenz</dt>
             <dd>@(_result?.License ?? "<keine Angabe>")</dd>

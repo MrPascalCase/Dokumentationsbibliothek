@@ -1,0 +1,54 @@
+﻿@using ImageSearch.Services
+@using ImageSearch.Services.Dto
+
+@if (Query != null)
+{
+    <a href="@GetUrl()" @onclick="NavigateToDecadeSearch">
+        @GetText()
+    </a>
+}
+else
+{
+    @Placeholder
+}
+
+@code {
+
+    [Parameter]
+    public Query? Query { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "<keine Angabe>";
+
+    [Inject]
+    public required SearchSession SearchSession { get; set; }
+
+    [CascadingParameter]
+    public Overlay? ParentOverlay { get; set; }
+
+    private string GetUrl()
+    {
+        if (Query == null) throw new NullReferenceException(nameof(Query));
+
+        return $"search{Query.ToUrl()}";
+    }
+
+    private string GetText()
+    {
+        if (Query == null) throw new NullReferenceException(nameof(Query));
+
+        return Query.ToLinkDisplayText();
+    }
+
+    private async void NavigateToDecadeSearch()
+    {
+        if (Query == null) return;
+
+        if (ParentOverlay != null)
+        {
+            await ParentOverlay.CloseOverlay();
+        }
+
+        await SearchSession.SetQuery(Query);
+    }
+}

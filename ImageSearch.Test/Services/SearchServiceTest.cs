@@ -118,7 +118,7 @@ public class SearchServiceTest : TestBase
     }
 
     [TestMethod]
-    public async Task TestLoadIds_()
+    public async Task TestLoadIds_search_for_autor_steiner_albert()
     {
         // Arrange
         ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
@@ -141,6 +141,24 @@ public class SearchServiceTest : TestBase
         {
             Assert.AreEqual("Steiner, Albert", image.Urheber);
         }
+    }
+
+    [TestMethod]
+    [Ignore] // TODO this test fails as there are multiple steiner, hanses and no images that are from BOTH of them.
+    public async Task TestLoadIds_search_for_autor_steiner_hans()
+    {
+        // Arrange
+        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
+        Query query = Query.ParseSearchText("autor:\"Steiner, Hans\"")!;
+
+        // Act
+        ImageIdCollection ids = await search.LoadIds(query, 0, 5);
+
+        // Assert
+        Assert.IsTrue(ids.Any());
+
+        // Assert.IsNotNull(query.CachedAuthors);
+        // Assert.AreEqual(1, query.CachedAuthors.Count);
     }
 
     #endregion

@@ -17,14 +17,10 @@ public partial class ImageDetail : ComponentBase
     public required ISearchService SearchService { get; set; }
 
     [Inject]
-    public required NavigationManager NavigationManager { get; set; }
-
-    [Inject]
     public required SearchSession SearchSession { get; set; }
 
     private string AspectRatioStyle => _result != null ? $"aspect-ratio: {_result.Width} / {_result.Height};" : "aspect-ratio: 1 / 1;";
     private string ImageSize => _result == null ? "noch nicht bekannt" : $"{_result.Width}x{_result.Height}";
-    private Link? DecadeLink => _result?.Decade == null ? null : new Link { Text = _result.Decade.ToString()!, Url = NavigationManager.BaseUri + $"search?dec={_result.Decade}", };
 
     private string _imageSrc = "./placeholder";
     private readonly string _imageAlt = "Bild wird geladen...";

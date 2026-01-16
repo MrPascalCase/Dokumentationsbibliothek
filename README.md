@@ -21,9 +21,9 @@ https://app.dasch.swiss/project/ZjLtCB-rRpG-NglRpxy1dg/search
 - ~~execute search immediately with 'enter'~~
 - ~~show image preview as overlay~~
 - ~~fix the placeholder in the image preview~~
-- search by author, ~~decade~~, year, subject
+- search by ~~author, decade~~, year, subject
 - ~~fix season/jahreszeit~~
-- image details should have links to search by author, year, ~~decade~~, subject
+- image details should have links to search by ~~author,~~ year, ~~decade~~, subject
 - ~~API support for multiple search terms~~
 - ~~UI support for multiple search terms~~
 - layout optimization for mobile
@@ -41,3 +41,4 @@ https://app.dasch.swiss/project/ZjLtCB-rRpG-NglRpxy1dg/search
 - fix "Erfassungsdatum"
 - improve detaillayout
 - ~~bild id in the detail view is wrong~~
+- fix search autor:\"Steiner, Hans\"
