@@ -1,8 +1,11 @@
-﻿namespace ImageSearch.Services;
+﻿namespace ImageSearch.Services.Dto;
 
 [Serializable]
 public class Image
 {
+    // rdfs:label
+    public string Id { get; init; }
+    
     // rdfs:label
     public string Title { get; init; }
 
@@ -46,7 +49,7 @@ public class Image
     public string? Negativnummer { get; init; }
 
     // dokubib:hasErfassungsdatum/knora-api:valueAsString ("GREGORIAN:2017-07-27 CE")
-    public string? Erfassungsdatum { get; init; }
+    public DateOnly? Erfassungsdatum { get; init; }
 
     // dokubib:hasJahreszeit/knora-api:listValueAsListNode/@id -> then resolve the label using the node endpoint
     public string? Season { get; init; }
@@ -127,10 +130,11 @@ public class Image
             + $"{nameof(Urheber)}: {Urheber}, "
             + $"{nameof(Bildform)}: {Bildform}, "
             + $"{nameof(Negativnummer)}: {Negativnummer}, "
-            + $"{nameof(Erfassungsdatum)}: {Erfassungsdatum}, "
+            + $"{nameof(Erfassungsdatum)}: {Erfassungsdatum:d}, "
             + $"{nameof(Season)}: {Season}, "
             + $"{nameof(CopyRight)}: {CopyRight}, "
             + $"{nameof(Caption)}: {Caption}, "
-            + $"{nameof(Subject)}: {string.Join(">", Subject)}";
+            + $"{nameof(Subject)}: {string.Join(">", Subject)} "
+            + $"{nameof(Id)}: {Id}";
     }
 }

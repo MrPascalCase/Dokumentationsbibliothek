@@ -1,4 +1,5 @@
 using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 using ImageSearch.Services.Interfaces;
 using ImageSearch.Services.Justifications;
 using Microsoft.AspNetCore.Components;

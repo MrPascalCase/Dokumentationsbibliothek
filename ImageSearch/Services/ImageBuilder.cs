@@ -1,4 +1,6 @@
-﻿using ImageSearch.Services.Interfaces;
+﻿using System.Globalization;
+using ImageSearch.Services.Dto;
+using ImageSearch.Services.Interfaces;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -18,6 +20,7 @@ public class ImageBuilder
         if (content == null) throw new ArgumentNullException(nameof(content));
         JObject root = JsonConvert.DeserializeObject<JObject>(content) ?? throw new NullReferenceException(nameof(root));
 
+        string? id = root["@id"]?.Value<string?>();
         int? imageNr = root["dokubib:hasBildnummer"]?["knora-api:intValueAsInt"]?.Value<int?>();
         string year = root["dokubib:hasJahrExakt"]?["knora-api:valueAsString"]?.Value<string?>() ?? string.Empty;
         DateTime? creationDate = root["knora-api:creationDate"]?["@value"]?.Value<DateTime?>();
@@ -29,7 +32,7 @@ public class ImageBuilder
         string? urheber = root["dokubib:linkToUrheberValue"]?["knora-api:linkValueHasTarget"]?["rdfs:label"]?.Value<string?>();
         // Bildform = root["dokubib:linkToBildformatValue"]?["knora-api:linkValueHasTarget"]?["rdfs:label"]?.Value<string?>();
         string? negativnummer = root["dokubib:hasNegativnummer"]?["knora-api:valueAsString"]?.Value<string?>();
-        string? erfassungsdatum = root["dokubib:hasErfassungsdatum"]?["knora-api:valueAsString"]?.Value<string?>();
+        DateOnly? erfassungsdatum = GetErfassungsdatum(root);
         string? copyRight = root["dokubib:linkToCopyrightValue"]?["knora-api:linkValueHasTarget"]?["rdfs:label"]?.Value<string?>();
 
         string? seasonNodeId = root["dokubib:hasJahreszeit"]?["knora-api:listValueAsListNode"]?["@id"]?.Value<string?>();
@@ -50,6 +53,7 @@ public class ImageBuilder
 
         return new Image
         {
+            Id = id ?? throw new NullReferenceException(nameof(id)),
             ImageNr = imageNr,
             Year = year,
             CreationDate = creationDate,
@@ -70,7 +74,7 @@ public class ImageBuilder
             Subject = subject,
         };
     }
-
+    
     public bool IsValidImage(string content, out string error)
     {
         if (content == null) throw new ArgumentNullException(nameof(content));
@@ -172,5 +176,23 @@ public class ImageBuilder
             value.Split(' ', StringSplitOptions.RemoveEmptyEntries)
                 .Select(w => char.ToUpper(w[0]) + w[1..].ToLower())
         );
+    }
+
+    private static DateOnly? GetErfassungsdatum(JObject root)
+    {
+        string? text = root["dokubib:hasErfassungsdatum"]?["knora-api:valueAsString"]?.Value<string?>();
+        if (string.IsNullOrWhiteSpace(text)) return null;
+
+        const string prefix = "GREGORIAN:";
+        const string suffix = " CE";
+
+        if (!text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            || !text.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new FormatException("Input is not in the expected format.");
+        }
+
+        string datePart = text.Substring(prefix.Length, text.Length - prefix.Length - suffix.Length);
+        return DateOnly.ParseExact(datePart, "yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ImageSearch.Services;
+using ImageSearch.Services.Dto;
 
 namespace ImageSearch.Test.Services;
 

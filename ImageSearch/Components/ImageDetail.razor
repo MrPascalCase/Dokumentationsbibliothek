@@ -1,4 +1,5 @@
-﻿@using ImageSearch.Services.Dto
+﻿@using System.Globalization
+@using ImageSearch.Services.Dto
 
 <div class="container">
     <div class="left" style="@AspectRatioStyle">
@@ -34,7 +35,7 @@
             <dd>@(_result?.Description ?? "<keine Angabe>")</dd>
 
             <dt>Erfassungsdatum</dt>
-            <dd>@(_result?.Erfassungsdatum ?? "<keine Angabe>")</dd>
+            <dd>@(_result?.Erfassungsdatum?.ToString("dd.MM.yyyy", CultureInfo.InvariantCulture) ?? "<keine Angabe>")</dd>
 
             <dt>Jahr</dt>
             <dd>@(_result?.Year ?? "<keine Angabe>")</dd>

@@ -188,11 +188,11 @@ public class SearchServiceTest : TestBase
     public async Task TestLoadImages_5_images_for_Morteratsch()
     {
         // Arrange
-        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
-        ImageIdCollection ids = await search.LoadIds(Query.FromText("Morteratsch"), 0, 5);
+        ISearchService service = new SearchService(new HttpClient(), null);
+        ImageIdCollection ids = await service.LoadIds(Query.FromText("Morteratsch"), 0, 5);
 
         // Act
-        Image[] images = await search.LoadImages(ids);
+        Image[] images = await service.LoadImages(ids);
 
         // Assert
         foreach (Image image in images)
@@ -200,6 +200,37 @@ public class SearchServiceTest : TestBase
             Console.WriteLine(image);
             Assert.IsTrue(image.Description.ToLowerInvariant().Contains("morteratsch"));
         }
+    }
+
+    [TestMethod]
+    public async Task TestLoadImage()
+    {
+        // Arrange
+        ISearchService service = new SearchService(new HttpClient(), null); // , ArrangeConsoleLogger<SearchService>());
+
+        // Act
+        Image? image = await service.LoadImage("http://rdfh.ch/0804/-DKqSTu0QoOnXL3atDiXHQ");
+
+        // Assert
+        Assert.IsNotNull(image);
+
+        Assert.AreEqual("NATURKUNDE-KLIMATOLOGIE UND METEOROLOGIE-Gletscher (001417)", image.Title);
+        Assert.AreEqual("Morteratsch-Gletscher", image.Description);
+        Assert.AreEqual("ca.1950", image.Year);
+        Assert.AreEqual(1417, image.ImageNr);
+        Assert.AreEqual(new DateTime(2014, 04, 08, 13, 45, 49), image.CreationDate);
+        Assert.AreEqual(1950, image.Decade);
+        Assert.AreEqual("https://iiif.dasch.swiss:443/0804/33CIzjfw36G-IlxZY5JNFJu.jpx/full/5746,4572/0/default.jpg", image.ImageUrl);
+        Assert.AreEqual(5746, image.Width);
+        Assert.AreEqual(4572, image.Height);
+        Assert.AreEqual("CC BY-NC-ND 4.0", image.License);
+        Assert.IsNull(image.Bildform);
+        Assert.AreEqual(new DateOnly(2003, 04, 02), image.Erfassungsdatum);
+        Assert.AreEqual("Sommer", image.Season);
+        Assert.AreEqual("Allan Cash Picture Library", image.CopyRight);
+        Assert.AreEqual("Gletscher", image.Caption);
+        CollectionAssert.AreEqual(new[] { "Naturkunde", "Klimatologie Und Meteorologie", }, image.Subject);
+        Assert.AreEqual("http://rdfh.ch/0804/-DKqSTu0QoOnXL3atDiXHQ", image.Id);
     }
 
     #endregion

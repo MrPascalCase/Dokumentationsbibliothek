@@ -1,4 +1,6 @@
-﻿namespace ImageSearch.Services.Interfaces;
+﻿using ImageSearch.Services.Dto;
+
+namespace ImageSearch.Services.Interfaces;
 
 internal static class SearchServiceExtensions
 {
