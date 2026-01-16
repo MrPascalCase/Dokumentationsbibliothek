@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using ImageSearch.Services.Dto;
+using ImageSearch.Services.Interfaces;
 using ImageSearch.Services.QueryProcessing;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -21,7 +22,7 @@ public class SearchService : ISearchService, IImageDetailResolver
     private const string SearchByLabelEndpoint = "https://api.dasch.swiss/v2/searchbylabel";
 
     private const string PeopleResourceClass = "http%3A%2F%2Fapi.dasch.swiss%2Fontology%2F0804%2Fdokubib%2Fv2%23Person";
-    
+
     private readonly ILogger<SearchService>? _logger;
     private readonly HttpClient _httpClient;
     private readonly ConcurrentDictionary<string, string> _nodeLabelCache;
@@ -35,9 +36,11 @@ public class SearchService : ISearchService, IImageDetailResolver
         _imageBuilder = new ImageBuilder(this);
     }
 
-    public async Task<int?> Count(ImageQuery query)
+    public async Task<int?> Count(Query query)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
+
+        await EnsureAuthorsResolved(query);
 
         QueryProcessor processor = new();
         _logger?.LogTrace($"Loading Count for query='{query}'...");
@@ -57,13 +60,18 @@ public class SearchService : ISearchService, IImageDetailResolver
         return count;
     }
 
-    public async Task<ImageIdCollection> LoadIds(string query, int start, int count)
+    public async Task<ImageIdCollection> LoadIds(Query query, int start, int count)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
         if (start < 0) throw new ArgumentOutOfRangeException(nameof(start));
         if (count < 1) throw new ArgumentOutOfRangeException(nameof(count));
 
-        _logger?.LogTrace($"Loading Ids {start} to {start + count} for query='{query}'");
+        await EnsureAuthorsResolved(query);
+
+        QueryProcessor processor = new();
+        string sparqlQuery = processor.BuildQuery(query);
+        
+        _logger?.LogTrace($"Loading Ids {start} to {start + count} for query='{sparqlQuery}'");
 
         int startPage = start / ApiPageSize; // Start page number of the API
         int additionalElementsStart = start - ApiPageSize * startPage; // number elements that are loaded additionally at the "front" due to paging
@@ -74,7 +82,7 @@ public class SearchService : ISearchService, IImageDetailResolver
             .Range(startPage, pageCount)
             .Select(async page =>
             {
-                string queryWithOffset = query + $"OFFSET {page}";
+                string queryWithOffset = sparqlQuery + $"OFFSET {page}";
                 string content = await RunQuery(queryWithOffset, SearchEndpoint);
                 string[] ids = ExtractIds(content);
                 foreach (string id in ids)
@@ -110,7 +118,7 @@ public class SearchService : ISearchService, IImageDetailResolver
 
         string content = await QueryImageDetails(imageId);
         _logger?.LogTrace($"Received image-data for image id='{imageId}': {content}");
-        
+
         if (_imageBuilder.IsValidImage(content, out string? error))
         {
             Image img = await _imageBuilder.BuildImage(content);
@@ -120,6 +128,7 @@ public class SearchService : ISearchService, IImageDetailResolver
         _logger?.LogWarning($"Image with id='{imageId}' cannot be loaded: {error}{Environment.NewLine} content:{content}");
         return null;
     }
+
 
     public async Task<string> ResolveNodeLabel(string nodeId)
     {
@@ -145,16 +154,16 @@ public class SearchService : ISearchService, IImageDetailResolver
         string encoded = UrlEncoder.Default.Encode(name);
         string url = $"{SearchByLabelEndpoint}/{encoded}?offset=0&limitToResourceClass={PeopleResourceClass}";
         using HttpRequestMessage request = new(HttpMethod.Get, url);
-        
+
         Stopwatch sw = Stopwatch.StartNew();
         HttpResponseMessage response = await _httpClient.SendAsync(request);
         _logger?.LogInformation($"Response form {SearchByLabelEndpoint} arrived in {sw.ElapsedMilliseconds} ms.");
-        
+
         response.EnsureSuccessStatusCode();
 
         string content = await response.Content.ReadAsStringAsync();
 
-        PersonBuilder builder = new PersonBuilder();
+        PersonBuilder builder = new();
         Person[] result = builder.BuildPeople(content);
 
         return result;
@@ -244,9 +253,25 @@ public class SearchService : ISearchService, IImageDetailResolver
 
         return await response.Content.ReadAsStringAsync();
     }
-    
-    
-    
+
+    private async Task EnsureAuthorsResolved(Query query)
+    {
+        if (query.CachedAuthors != null) return;
+
+        List<Task<Person[]>> tasks =
+            query.Terms
+                .Select(async term => await SearchPeople(term))
+                .ToList();
+
+        if (query.Author != null)
+        {
+            tasks.Add(SearchPeople(query.Author));
+        }
+
+        Person[][] results = await Task.WhenAll(tasks);
+        query.CachedAuthors = results.SelectMany(p => p).ToArray();
+    }
+
     async Task<string> IImageDetailResolver.ResolveSeasonNodeLabel(string nodeId)
     {
         return await ResolveNodeLabel(nodeId);

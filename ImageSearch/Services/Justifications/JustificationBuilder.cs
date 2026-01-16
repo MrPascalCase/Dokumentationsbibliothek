@@ -26,13 +26,13 @@ public class JustificationBuilder
     public IReadOnlyList<string> HardBreakExceptions { get; init; } = new[] { "st. moritz", "ca. ", };
 
     [Pure]
-    public MarkupString Justify(ImageQuery query, Image image)
+    public MarkupString Justify(Query query, Image image)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
         if (image == null) throw new ArgumentNullException(nameof(image));
         if (image.Description == null) throw new ArgumentNullException(nameof(image.Description));
 
-        return Justify(query.Description.ToArray(), image.Description);
+        return Justify(query.Terms.ToArray(), image.Description);
     }
 
     [Pure]

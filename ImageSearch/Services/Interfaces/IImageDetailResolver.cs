@@ -1,4 +1,4 @@
-﻿namespace ImageSearch.Services;
+﻿namespace ImageSearch.Services.Interfaces;
 
 public interface IImageDetailResolver
 {

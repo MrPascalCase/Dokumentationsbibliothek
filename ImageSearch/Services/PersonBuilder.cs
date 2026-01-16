@@ -9,6 +9,7 @@ public class PersonBuilder
     public Person[] BuildPeople(string content)
     {
         if (content == null) throw new ArgumentNullException(nameof(content));
+        content = content.Trim();
 
         JObject root = JsonConvert.DeserializeObject<JObject>(content) ?? throw new NullReferenceException(nameof(root));
         JToken? graph = root["@graph"];
@@ -22,11 +23,10 @@ public class PersonBuilder
             }
         }
 
-        // if (graph == null)
-        // {
-        //     _logger?.LogWarning("Unable to extract Ids from content. content='{content}'", content);
-        //     return Array.Empty<string>();
-        // }
+        if (graph == null)
+        {
+            return Array.Empty<Person>();
+        }
 
         List<Person> people = new();
         foreach (JObject elem in graph.OfType<JObject>().ToArray())

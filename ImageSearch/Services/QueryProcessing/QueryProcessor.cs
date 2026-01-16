@@ -6,9 +6,7 @@ namespace ImageSearch.Services.QueryProcessing;
 
 public class QueryProcessor
 {
-    private int _nextFilterNumber;
-
-    public string BuildQuery(ImageQuery query)
+    public string BuildQuery(Query query)
     {
         if (query == null) throw new ArgumentNullException(nameof(query));
 
@@ -35,21 +33,25 @@ public class QueryProcessor
         writer.WriteLine("}");
 
         writer.Flush();
-        return sb.ToString();
+        return sb.ToString().Trim();
     }
 
-    internal int ReserveFilterNumber()
-    {
-        return _nextFilterNumber++;
-    }
-
-    private List<FilterComponent> GetComponents(ImageQuery query)
+    private List<FilterComponent> GetComponents(Query query)
     {
         List<FilterComponent> components = new();
+        int i = 0;
 
-        if (query.ImageNr != null) components.Add(new ImageNrFilter(this, query.ImageNr.Value));
-        if (query.Decade != null) components.Add(new DecadeFiler(this, query.Decade.Value));
-        foreach (string text in query.Description) components.Add(new DescriptionFilter(this, text));
+        if (query.ImageNr != null) components.Add(new ImageNrFilter(i++, query.ImageNr.Value));
+        if (query.Decade != null) components.Add(new DecadeFiler(i++, query.Decade.Value));
+        foreach (string text in query.Terms) components.Add(new DescriptionFilter(i++, text));
+
+        if (query.CachedAuthors != null)
+        {
+            foreach (Person author in query.CachedAuthors)
+            {
+                components.Add(new AuthorFilter(i++, author));
+            }
+        }
 
         return components;
     }

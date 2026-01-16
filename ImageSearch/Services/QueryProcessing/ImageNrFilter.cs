@@ -6,7 +6,7 @@ internal class ImageNrFilter : FilterComponent
 {
     private readonly int _imageNr;
 
-    internal ImageNrFilter(QueryProcessor processor, int imageNr) : base(processor)
+    internal ImageNrFilter(int filterNumber, int imageNr) : base(filterNumber)
     {
         _imageNr = imageNr;
     }

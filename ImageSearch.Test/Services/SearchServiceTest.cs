@@ -1,5 +1,6 @@
 ﻿using ImageSearch.Services;
 using ImageSearch.Services.Dto;
+using ImageSearch.Services.Interfaces;
 
 namespace ImageSearch.Test.Services;
 
@@ -15,7 +16,7 @@ public class SearchServiceTest : TestBase
         ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await service.LoadIds(new ImageQuery { ImageNr = 14826, }, 0, 25);
+        ImageIdCollection ids = await service.LoadIds(new Query { ImageNr = 14826, }, 0, 25);
         Image? image = await service.LoadImage(ids.Single());
 
         // Assert
@@ -29,7 +30,7 @@ public class SearchServiceTest : TestBase
         ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await service.LoadIds(ImageQuery.FromText("Postauto"), 0, 40);
+        ImageIdCollection ids = await service.LoadIds(Query.FromText("Postauto"), 0, 40);
 
         // Assert
         Assert.AreEqual(40, ids.Count);
@@ -41,10 +42,10 @@ public class SearchServiceTest : TestBase
     {
         // Arrange
         ISearchService searchService = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
-        ImageIdCollection ids = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 0, 50);
+        ImageIdCollection ids = await searchService.LoadIds(Query.FromText("Postauto"), 0, 50);
 
         // Act
-        ImageIdCollection ids25And26 = await searchService.LoadIds(ImageQuery.FromText("Postauto"), 24, 2);
+        ImageIdCollection ids25And26 = await searchService.LoadIds(Query.FromText("Postauto"), 24, 2);
 
         // Assert
         Assert.AreEqual(50, ids.Count);
@@ -62,10 +63,10 @@ public class SearchServiceTest : TestBase
     {
         // Arrange
         ISearchService searchService = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
-        ImageIdCollection ids0To100 = await searchService.LoadIds(ImageQuery.FromText("Schnee"), 0, 100);
+        ImageIdCollection ids0To100 = await searchService.LoadIds(Query.FromText("Schnee"), 0, 100);
 
         // Act
-        ImageIdCollection ids33To77 = await searchService.LoadIds(ImageQuery.FromText("Schnee"), 33, 44);
+        ImageIdCollection ids33To77 = await searchService.LoadIds(Query.FromText("Schnee"), 33, 44);
 
         // Assert
         Assert.AreEqual(100, ids0To100.Count);
@@ -87,7 +88,7 @@ public class SearchServiceTest : TestBase
         ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Postauto"), 0, 5);
+        ImageIdCollection ids = await search.LoadIds(Query.FromText("Postauto"), 0, 5);
         Image[] images = await search.LoadImages(ids);
 
         // Assert
@@ -105,14 +106,40 @@ public class SearchServiceTest : TestBase
         ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
 
         // Act
-        ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("schnee"), 0, 5);
-        Image[] images = await search.LoadImages(ids);
+        ImageIdCollection ids = await search.LoadIds(Query.FromText("schnee"), 0, 5);
 
         // Assert
+        Image[] images = await search.LoadImages(ids);
         foreach (Image image in images)
         {
             Console.WriteLine(image);
             Assert.IsTrue(image.Description.ToLowerInvariant().Contains("schnee"));
+        }
+    }
+
+    [TestMethod]
+    public async Task TestLoadIds_()
+    {
+        // Arrange
+        ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
+        Query query = new() { Author = "Steiner, Albert", };
+
+        // Act
+        ImageIdCollection ids = await search.LoadIds(query, 0, 5);
+
+        // Assert
+        Assert.IsNotNull(query.CachedAuthors);
+        Assert.AreEqual(1, query.CachedAuthors.Count);
+
+        Person person = query.CachedAuthors.First();
+        Assert.AreEqual("Albert", person.FirstName);
+        Assert.AreEqual("Steiner", person.LastName);
+        Assert.AreEqual("St. Moritz", person.City);
+
+        Image[] images = await search.LoadImages(ids);
+        foreach (Image image in images)
+        {
+            Assert.AreEqual("Steiner, Albert", image.Urheber);
         }
     }
 
@@ -125,7 +152,7 @@ public class SearchServiceTest : TestBase
     {
         // Arrange
         ISearchService search = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
-        ImageIdCollection ids = await search.LoadIds(ImageQuery.FromText("Morteratsch"), 0, 5);
+        ImageIdCollection ids = await search.LoadIds(Query.FromText("Morteratsch"), 0, 5);
 
         // Act
         Image[] images = await search.LoadImages(ids);
@@ -213,7 +240,7 @@ public class SearchServiceTest : TestBase
     {
         // Arrange
         ISearchService service = new SearchService(new HttpClient(), ArrangeConsoleLogger<SearchService>());
-        ImageQuery query = ImageQuery.ParseSearchText("dec:1930 postauto")!;
+        Query query = Query.ParseSearchText("dec:1930 postauto")!;
 
         // Act
         ImageIdCollection ids = await service.LoadIds(query, 0, 100);

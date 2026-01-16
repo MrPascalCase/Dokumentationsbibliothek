@@ -1,4 +1,5 @@
 using ImageSearch.Services;
+using ImageSearch.Services.Interfaces;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Diagnostics;
 using ImageSearch.Services.Dto;
+using ImageSearch.Services.Interfaces;
 
 namespace ImageSearch.Services;
 
@@ -8,7 +9,7 @@ public class SearchSession : IReadOnlyList<string>
 {
     public int SearchDelayMs { get; init; } = 1000;
     public int ApiPaging { get; init; } = 25;
-    public ImageQuery? CurrentQuery { get; private set; }
+    public Query? CurrentQuery { get; private set; }
     public int? TotalImageCount { get; private set; }
     public TimeSpan? TimeToSearchCount { get; private set; }
     public int Count => _images.Count;
@@ -33,7 +34,7 @@ public class SearchSession : IReadOnlyList<string>
         logger?.LogTrace($"{nameof(SearchSession)} created.");
     }
 
-    public async Task SetQuery(ImageQuery? query, bool debounce = true)
+    public async Task SetQuery(Query? query, bool debounce = true)
     {
         if (CurrentQuery == query) return;
 

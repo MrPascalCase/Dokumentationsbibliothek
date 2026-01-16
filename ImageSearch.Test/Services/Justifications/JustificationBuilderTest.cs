@@ -207,7 +207,7 @@ public class JustificationBuilderTest
     public void TestJustify_example_with_one_term()
     {
         // Arrange
-        ImageQuery query = ImageQuery.FromText("postauto");
+        Query query = Query.FromText("postauto");
         Image result = new() { Description = "Vorpflug Postauto bei der Schneeräumung", };
         JustificationBuilder builder = new() { ContextLength = 40, MatchStyle = "match", };
 
@@ -226,7 +226,7 @@ public class JustificationBuilderTest
         string text =
             "Neues Post-Hotel, Schweizerische Kreditanstalt (SKA), heute Boutiquen, Via Serlas, Flaggen (Fahnen) verschiedener Nationen,Parkierte Autos";
 
-        ImageQuery query = new() { Description = new[] { "post", "hotel", }, };
+        Query query = new() { Terms = new[] { "post", "hotel", }, };
         Image result = new() { Description = text, };
         JustificationBuilder builder = new() { ContextLength = 40, MatchStyle = "match", };
 

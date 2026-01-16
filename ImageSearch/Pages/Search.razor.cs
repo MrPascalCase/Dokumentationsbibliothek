@@ -23,7 +23,7 @@ public partial class Search : ComponentBase, IDisposable
     {
         SearchSession.OnQueryChanged += OnQueryChanged;
         Uri uri = new(NavigationManager.Uri);
-        ImageQuery? query = ImageQuery.ParseUrlQuery(uri.Query);
+        Query? query = Query.ParseUrl(uri.Query);
         _inputText = query?.ToCanonicalSearchText() ?? string.Empty;
         await SearchSession.SetQuery(query);
     }
@@ -31,7 +31,7 @@ public partial class Search : ComponentBase, IDisposable
     private async Task QueueSearch(bool forced)
     {
         string baseUri = NavigationManager.BaseUri;
-        ImageQuery? query = ImageQuery.ParseSearchText(_inputText);
+        Query? query = Query.ParseSearchText(_inputText);
         NavigationManager.NavigateTo(baseUri + "search" + (query?.ToUrl() ?? string.Empty));
         await SearchSession.SetQuery(query, !forced);
     }
@@ -44,7 +44,7 @@ public partial class Search : ComponentBase, IDisposable
 
     private void OnQueryChanged()
     {
-        ImageQuery? inputAsQuery = ImageQuery.ParseSearchText(_inputText);
+        Query? inputAsQuery = Query.ParseSearchText(_inputText);
         if (inputAsQuery != SearchSession.CurrentQuery)
         {
             Logger.LogInformation($"External change of the the query form '{inputAsQuery}' to '{SearchSession.CurrentQuery}'.");

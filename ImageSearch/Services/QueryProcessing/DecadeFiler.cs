@@ -6,7 +6,7 @@ internal class DecadeFiler : FilterComponent
 {
     private readonly int _decade;
 
-    internal DecadeFiler(QueryProcessor processor, int decade) : base(processor)
+    internal DecadeFiler(int filterNumber, int decade) : base(filterNumber)
     {
         _decade = decade;
     }

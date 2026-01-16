@@ -1,5 +1,6 @@
 using ImageSearch.Services;
 using ImageSearch.Services.Dto;
+using ImageSearch.Services.Interfaces;
 using Microsoft.AspNetCore.Components;
 
 namespace ImageSearch.Components;
@@ -50,6 +51,6 @@ public partial class ImageDetail : ComponentBase
             await ParentOverlay.CloseOverlay();
         }
 
-        await SearchSession.SetQuery(new ImageQuery { Decade = _result.Decade, });
+        await SearchSession.SetQuery(new Query { Decade = _result.Decade, });
     }
 }

@@ -6,9 +6,9 @@ public abstract class FilterComponent
 {
     protected int FilterNumber { get; }
 
-    protected FilterComponent(QueryProcessor processor)
+    protected FilterComponent(int filterNumber)
     {
-        FilterNumber = processor.ReserveFilterNumber();
+        FilterNumber = filterNumber;
     }
 
     internal abstract void AddConstruct(IndentedTextWriter writer);

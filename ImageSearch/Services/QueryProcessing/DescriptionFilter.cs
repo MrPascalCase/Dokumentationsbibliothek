@@ -6,7 +6,7 @@ internal class DescriptionFilter : FilterComponent
 {
     private readonly string _query;
 
-    internal DescriptionFilter(QueryProcessor processor, string query) : base(processor)
+    internal DescriptionFilter(int filterNumber, string query) : base(filterNumber)
     {
         _query = query;
     }

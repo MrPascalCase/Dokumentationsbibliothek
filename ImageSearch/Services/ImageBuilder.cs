@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using ImageSearch.Services.Interfaces;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace ImageSearch.Services;
